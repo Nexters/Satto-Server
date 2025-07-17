@@ -4,7 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 
 class DBMiddleware(BaseHTTPMiddleware):
     """
-    api 요청(Request 객체 생성) 시 데이터베이스 세션 주입
+    API 요청(Request 객체 생성) 시 DB 세션 주입
     """
 
     def __init__(self, app):
@@ -22,5 +22,3 @@ class DBMiddleware(BaseHTTPMiddleware):
             except Exception as e:
                 await session.rollback()
                 raise e
-            finally:
-                await session.close()

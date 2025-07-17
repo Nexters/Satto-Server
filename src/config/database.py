@@ -1,8 +1,17 @@
 from contextlib import asynccontextmanager
+from datetime import datetime
 
+from sqlalchemy import Column, DateTime
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
 
+from src.common.logger import logger
 from src.config.config import db_config
+
+
+class Base(DeclarativeBase):
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
 
 
 class Mysql:
@@ -10,16 +19,8 @@ class Mysql:
         self.config = config
 
         self.engine = create_async_engine(
-            "mysql+aiomysql://"
-            + config.MYSQL_USER
-            + ":"
-            + config.MYSQL_PASSWORD
-            + "@"
-            + config.MYSQL_HOST
-            + ":"
-            + config.MYSQL_PORT
-            + "/"
-            + config.MYSQL_DB,
+            f"mysql+aiomysql://{db_config.MYSQL_USER}:{db_config.MYSQL_PASSWORD}@{db_config.MYSQL_HOST}"
+            f":{db_config.MYSQL_PORT}/{db_config.MYSQL_DB}",
             echo=False,
             pool_pre_ping=True,
             pool_recycle=28000
@@ -32,6 +33,7 @@ class Mysql:
             autocommit=False,
             autoflush=False,
         )
+        logger.info("Connected to the MySQL database.")
 
     @asynccontextmanager
     async def session(self) -> AsyncSession:
