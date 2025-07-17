@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import DeclarativeBase
 
 from src.common.logger import logger
-from src.config.config import db_config
+from src.config.config import DBConfig
 
 
 class Base(DeclarativeBase):
@@ -15,12 +15,10 @@ class Base(DeclarativeBase):
 
 
 class Mysql:
-    def __init__(self, config: db_config) -> None:
-        self.config = config
-
+    def __init__(self, config: DBConfig) -> None:
         self.engine = create_async_engine(
-            f"mysql+aiomysql://{db_config.MYSQL_USER}:{db_config.MYSQL_PASSWORD}@{db_config.MYSQL_HOST}"
-            f":{db_config.MYSQL_PORT}/{db_config.MYSQL_DB}",
+            f"mysql+aiomysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}"
+            f":{config.MYSQL_PORT}/{config.MYSQL_DB}",
             echo=False,
             pool_pre_ping=True,
             pool_recycle=28000
