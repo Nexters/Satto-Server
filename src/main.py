@@ -5,6 +5,7 @@ from src.config.config import app_config
 from src.config.lifespan import lifespan
 from src.config.middleware import DBMiddleware
 from src.users.router import user_router
+from src.hcx_client.router import hcx_router
 
 app = FastAPI(lifespan=lifespan)
 
@@ -19,3 +20,4 @@ app.add_middleware(DBMiddleware)
 
 uri_prefix = "/api/v1"
 app.include_router(user_router, prefix=uri_prefix)
+app.include_router(hcx_router, prefix=uri_prefix)
