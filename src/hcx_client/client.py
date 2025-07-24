@@ -51,7 +51,7 @@ class HCXClient:
 
             return result["result"]["message"]["content"]
 
-    async def get_four_pillar(self, name: str, gender: str, birth_date: str):
+    async def get_four_pillar(self, name: str, gender: str, birth_date: str) -> FourPillarResponse:
         """사주 API 호출"""
         system_prompt, user_prompt_template = HCXUtils.get_prompt_pair('fortune.yaml', 'four_pillar')
         user_prompt = user_prompt_template.format(
@@ -63,4 +63,4 @@ class HCXClient:
             system_prompt=system_prompt,
             user_prompt=user_prompt
         )
-        return FourPillarResponse.model_validate(Parser.parse_four_pillar(result))
+        return Parser.parse_four_pillar(result)

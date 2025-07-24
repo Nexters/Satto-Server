@@ -15,13 +15,9 @@ async def get_four_pillar(
     request: FourPillarRequest
 ):
     """사주 API 호출"""
-    try:
-        result = await HCXClient().get_four_pillar(
-            name=request.name,
-            gender=request.gender,
-            birth_date=request.birth_date
-        )
-        return result
-    except Exception as e:
-        logger.info(f"{traceback.format_exc()}")
-        raise HTTPException(status_code=400, detail=f"HCX API 호출 실패: {str(e)}")
+    result = await HCXClient().get_four_pillar(
+        name=request.name,
+        gender=request.gender,
+        birth_date=request.birth_date
+    )
+    return result
