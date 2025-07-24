@@ -7,7 +7,7 @@ from src.config.middleware import DBMiddleware
 from src.users.router import user_router
 from src.hcx_client.router import hcx_router
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, root_path="/api/v1")
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,6 +18,5 @@ app.add_middleware(
 )
 app.add_middleware(DBMiddleware)
 
-uri_prefix = "/api/v1"
-app.include_router(user_router, prefix=uri_prefix)
-app.include_router(hcx_router, prefix=uri_prefix)
+app.include_router(user_router)
+app.include_router(hcx_router)
