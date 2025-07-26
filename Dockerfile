@@ -2,10 +2,15 @@ FROM python:3.10
 
 RUN apt-get update && apt-get install -y vim && apt-get install -y less
 
-COPY ./requirements.txt /tmp/requirements.txt
+RUN pip install poetry
+
+# 가상환경 생성하지 않음
+RUN poetry config virtualenvs.create false
 
 WORKDIR /satto
 
-COPY ./src /satto/src
+COPY pyproject.toml poetry.lock ./
 
-RUN pip install --no-cache-dir --upgrade -r /tmp/requirements.txt
+RUN poetry install --no-root
+
+COPY ./src /satto/src
