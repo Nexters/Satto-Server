@@ -1,37 +1,33 @@
+import json
 import re
-from src.hcx_client.entities.schemas import FourPillarResponse
 
 
 class Parser:
     @staticmethod
-    def parse_four_pillar(content: str) -> FourPillarResponse:
-        pattern = (
-            r"년주:\s*([^\n]+)\n"
-            r"월주:\s*([^\n]+)\n"
-            r"일주:\s*([^\n]+)\n"
-            r"시주:\s*([^\n]+)\n\n?"
-            r"사주 해석:\s*([\s\S]+)"
-        )
-        match = re.search(pattern, content, re.DOTALL)
-        if match:
-            year, month, day, time, interp = match.groups()
-            return FourPillarResponse(
-                year_pillar=year.strip(),
-                month_pillar=month.strip(),
-                day_pillar=day.strip(),
-                time_pillar=time.strip(),
-                interpretation=interp.strip(),
-            )
+    def parse_four_pillar(content: str):
+        # 마크다운 JSON 블록에서 JSON 추출
+        json_match = re.search(r"```json\s*(\{.*?\})\s*```", content, re.DOTALL)
+        if json_match:
+            try:
+                json_str = json_match.group(1)
+                json_data = json.loads(json_str)
+                return json_data
+            except json.JSONDecodeError as e:
+                raise ValueError(f"JSON 파싱 오류: {e}")
+            except Exception as e:
+                raise ValueError(f"모델 검증 오류: {e}")
 
-        # 일부만 추출하는 경우
-        def extract(key):
-            m = re.search(rf"{key}:\s*([^\n]+)", content)
-            return m.group(1).strip() if m else None
+        # 일반 코드 블록에서 JSON 추출 (```json이 아닌 경우)
+        code_match = re.search(r"```\s*(\{.*?\})\s*```", content, re.DOTALL)
+        if code_match:
+            try:
+                json_str = code_match.group(1)
+                json_data = json.loads(json_str)
+                return json_data
+            except json.JSONDecodeError as e:
+                raise ValueError(f"JSON 파싱 오류: {e}")
+            except Exception as e:
+                raise ValueError(f"모델 검증 오류: {e}")
 
-        return FourPillarResponse(
-            year_pillar=extract("년주"),
-            month_pillar=extract("월주"),
-            day_pillar=extract("일주"),
-            time_pillar=extract("시주"),
-            interpretation=extract("사주 해석"),
-        )
+        # JSON 블록을 찾지 못한 경우
+        raise ValueError("마크다운 JSON 블록을 찾을 수 없습니다.")
