@@ -27,7 +27,6 @@ class UserDetail(CommonBase):
     birth_date: datetime
     gender: Gender
     four_pillar: FourPillar
-    is_active: bool
 
 
 class UserList(CommonBase):
