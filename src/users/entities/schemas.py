@@ -20,6 +20,12 @@ class UserCreate(CommonBase):
     gender: Gender
 
 
+class UserUpdate(CommonBase):
+    name: Optional[str] = None
+    birth_date: Optional[datetime] = None
+    gender: Optional[Gender] = None
+
+
 class UserDetail(CommonBase):
     id: str
     name: str

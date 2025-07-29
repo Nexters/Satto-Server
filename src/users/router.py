@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 
 from src.lotto.entities.schemas import LottoRecommendation
 from src.lotto.service import LottoService
-from src.users.entities.schemas import UserCreate, UserDetail, UserList
+from src.users.entities.schemas import UserCreate, UserDetail, UserList, UserUpdate
 from src.users.service import UserService
 
 user_router = APIRouter(prefix="/users", tags=["user"])
@@ -30,6 +30,16 @@ async def get_user(user_id: str, user_service: UserService = Depends()):
 async def create_user(user_create: UserCreate, user_service: UserService = Depends()):
     """새로운 사용자를 생성합니다."""
     return await user_service.create_user(user_create)
+
+
+@user_router.put("/{user_id}", response_model=UserDetail)
+async def update_user(
+    user_id: str,
+    user_update: UserUpdate,
+    user_service: UserService = Depends()
+):
+    """사용자 정보를 수정합니다."""
+    return await user_service.update_user(user_id, user_update)
 
 
 @user_router.post("/{user_id}/lotto-recommendation", response_model=LottoRecommendation)

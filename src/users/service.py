@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException
 
 from src.four_pillars.common.calculator import FourPillarsCalculator
-from src.users.entities.schemas import UserCreate, UserDetail, UserList
+from src.users.entities.schemas import UserCreate, UserDetail, UserList, UserUpdate
 from src.users.repository import UserRepository
 
 
@@ -36,3 +36,18 @@ class UserService:
         created_user = await self.repository.create_user(user_create, four_pillar)
 
         return UserDetail.model_validate(created_user)
+
+    async def update_user(self, user_id: str, user_update: UserUpdate) -> UserDetail:
+        four_pillar = None
+        if user_update.birth_date:
+            four_pillar = self.four_pillar_calculator.calculate_four_pillars(
+                user_update.birth_date
+            )
+
+        updated_user = await self.repository.update_user(
+            user_id, user_update, four_pillar
+        )
+        if not updated_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return UserDetail.model_validate(updated_user)

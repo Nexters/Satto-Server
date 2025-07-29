@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.dependencies import get_db_session
 from src.four_pillars.entities.schemas import FourPillar
 from src.users.entities.models import User
-from src.users.entities.schemas import UserCreate
+from src.users.entities.schemas import UserCreate, UserUpdate
 
 
 class UserRepository:
@@ -40,4 +40,21 @@ class UserRepository:
         await self.session.flush()
         await self.session.refresh(user)
 
+        return user
+
+    async def update_user(self, user_id: str, user_update: UserUpdate, four_pillar: Optional[FourPillar] = None) -> Optional[User]:
+        user = await self.get_user_by_id(user_id)
+        if not user:
+            return None
+
+        update_data = user_update.model_dump(exclude_unset=True)
+        if four_pillar is not None:
+            update_data["four_pillar"] = four_pillar
+
+        for field, value in update_data.items():
+            setattr(user, field, value)
+        
+        await self.session.flush()
+        await self.session.refresh(user)
+        
         return user
