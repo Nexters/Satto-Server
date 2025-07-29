@@ -1,12 +1,15 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, String, Boolean, DateTime, Enum, JSON
 
 from src.config.database import Base
+from src.users.entities.enums import Gender
 
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String(255), primary_key=True, index=True)
     name = Column(String(255), nullable=False)
-    email = Column(String(255), unique=True, index=True, nullable=False)
+    birth_date = Column(DateTime, nullable=False)
+    gender = Column(Enum(Gender), nullable=False)
+    four_pillar = Column(JSON, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
