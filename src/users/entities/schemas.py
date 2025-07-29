@@ -1,24 +1,35 @@
 from pydantic import BaseModel, EmailStr
-from typing import List
+from typing import List, Optional
+from datetime import datetime
+
+from src.config.schemas import CommonBase
+from src.four_pillars.entities.schemas import FourPillar
+from src.users.entities.enums import Gender
 
 
-class UserBase(BaseModel):
+class UserBase(CommonBase):
     name: str
-    email: EmailStr
+    birth_date: datetime
+    gender: Gender
     is_active: bool = True
 
 
-class UserCreateRequest(UserBase):
-    pass
+class UserCreate(CommonBase):
+    id: str
+    name: str
+    birth_date: datetime
+    gender: Gender
 
 
-class UserResponse(UserBase):
-    id: int
+class UserDetail(CommonBase):
+    id: str
+    name: str
+    birth_date: datetime
+    gender: Gender
+    four_pillar: FourPillar
+    is_active: bool
 
-    class Config:
-        from_attributes = True
 
-
-class UserListResponse(BaseModel):
-    users: List[UserResponse]
+class UserList(CommonBase):
+    users: List[UserDetail]
     total: int

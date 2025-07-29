@@ -2,6 +2,8 @@ from datetime import datetime, date
 from pathlib import Path
 from typing import List, Tuple, Dict
 
+from src.four_pillars.entities.schemas import FourPillar
+
 
 class FourPillarsCalculator:
     # 천간 (天干)
@@ -113,7 +115,7 @@ class FourPillarsCalculator:
 
         return [year_pillar, month_pillar, day_pillar, time_pillar]
 
-    def calculate_four_pillars(self, birth_date: datetime) -> Dict[str, str]:
+    def calculate_four_pillars(self, birth_date: datetime) -> FourPillar:
         """사주 계산 메인 함수"""
         year = birth_date.year
         month = birth_date.month
@@ -127,7 +129,7 @@ class FourPillarsCalculator:
             minute = None
 
         pillars = self._calculate_kanshi(year, month, day, hour, minute)
-        result = {
+        result: FourPillar = {
             "year_pillar": pillars[0],  # 년주
             "month_pillar": pillars[1],  # 월주
             "day_pillar": pillars[2],  # 일주
