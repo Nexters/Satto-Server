@@ -17,13 +17,13 @@ services:
       retries: 10
 
   fastapi:
-    build: .
+    image: satto-registry.kr.ncr.ntruss.com/satto-server-fastapi:latest
+    pull_policy: always
     container_name: fastapi-app
     depends_on:
       mysql:
         condition: service_healthy
     volumes:
-      - ./src:/satto/src
       - ${WRITABLE_DIR}/logs/app:/data/logs/app
     command: >
       sh -c "
