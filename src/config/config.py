@@ -14,5 +14,11 @@ class DBConfig(BaseSettings):
     MYSQL_DB: str = Field(...)
 
 
+class HcxConfig(BaseSettings):
+    HCX_KEY: str = Field(...)
+    HCX_URL: str = Field(...)
+
+
 app_config = AppConfig()
 db_config = DBConfig()
+hcx_config = HcxConfig()
