@@ -11,6 +11,6 @@ WORKDIR /satto
 
 COPY pyproject.toml poetry.lock ./
 
-RUN poetry install --no-root
+RUN poetry lock && poetry install --no-root
 
 COPY ./src /satto/src
