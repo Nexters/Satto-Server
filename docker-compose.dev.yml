@@ -11,10 +11,10 @@ services:
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     ports:
       - "3306:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 5s
-      retries: 10
+#    healthcheck:
+#      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+#      timeout: 5s
+#      retries: 10
 
   fastapi:
     image: satto-registry.kr.ncr.ntruss.com/satto-server-fastapi:latest
