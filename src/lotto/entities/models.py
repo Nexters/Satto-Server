@@ -31,12 +31,7 @@ class LottoDraws(Base):
     first_prize_amount = Column(BigInteger, nullable=False)
     total_winners = Column(Integer, nullable=False)
 
-    __table_args__ = (
-        CheckConstraint("num1 BETWEEN 1 AND 45", name="num1_range_check"),
-        CheckConstraint("num2 BETWEEN 1 AND 45", name="num2_range_check"),
-        CheckConstraint("num3 BETWEEN 1 AND 45", name="num3_range_check"),
-        CheckConstraint("num4 BETWEEN 1 AND 45", name="num4_range_check"),
-        CheckConstraint("num5 BETWEEN 1 AND 45", name="num5_range_check"),
-        CheckConstraint("num6 BETWEEN 1 AND 45", name="num6_range_check"),
-        CheckConstraint("bonus_num BETWEEN 1 AND 45", name="bonus_num_range_check"),
+    __table_args__ = tuple(
+        CheckConstraint(f"{col} BETWEEN 1 AND 45", name=f"{col}_range_check")
+        for col in ["num1", "num2", "num3", "num4", "num5", "num6", "bonus_num"]
     )
