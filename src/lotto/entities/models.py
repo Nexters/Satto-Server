@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Date, CheckConstraint
+from sqlalchemy import Column, Integer, Date, CheckConstraint, BigInteger
 
 from src.config.database import Base
 
@@ -28,7 +28,7 @@ class LottoDraws(Base):
     num5 = Column(Integer, nullable=False)
     num6 = Column(Integer, nullable=False)
     bonus_num = Column(Integer, nullable=False)
-    first_prize_amount = Column(Integer, nullable=False)
+    first_prize_amount = Column(BigInteger, nullable=False)
     total_winners = Column(Integer, nullable=False)
 
     __table_args__ = (
