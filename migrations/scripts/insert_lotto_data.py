@@ -64,7 +64,7 @@ class LottoDataImporter:
             "num5": data["drwtNo5"],
             "num6": data["drwtNo6"],
             "bonus_num": data["bnusNo"],
-            "first_prize_amount": data["firstAccumamnt"],
+            "first_prize_amount": data["firstWinamnt"],
             "total_winners": data["firstPrzwnerCo"]
         }
     
