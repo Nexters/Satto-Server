@@ -29,6 +29,7 @@ from src.config.database import Base
 
 # 모든 도메인 모델을 import하여 메타데이터에 포함해야 함
 from src.users.entities.models import User
+from src.lotto.entities.models import LottoStatistics, LottoDraws
 
 # 모델 메타데이터 설정
 target_metadata = Base.metadata
