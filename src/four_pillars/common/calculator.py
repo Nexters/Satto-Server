@@ -1,8 +1,9 @@
 from datetime import datetime, date
 from pathlib import Path
 from typing import List, Tuple, Dict
+from collections import Counter
 
-from src.four_pillars.entities.schemas import FourPillar
+from src.four_pillars.entities.schemas import FourPillar, FiveElements
 
 
 class FourPillarsCalculator:
@@ -14,6 +15,39 @@ class FourPillarsCalculator:
     def __init__(self):
         self._init_kanshi_data()
         self._init_setsuiri_data()
+        self._init_five_elements_mapping()
+
+    def _init_five_elements_mapping(self):
+        """천간과 지지의 오행 매핑 초기화"""
+        # 천간 오행 매핑
+        self.jikkan_five_elements = {
+            "甲": FiveElements.WOOD,   # 갑 - 목
+            "乙": FiveElements.WOOD,   # 을 - 목
+            "丙": FiveElements.FIRE,   # 병 - 화
+            "丁": FiveElements.FIRE,   # 정 - 화
+            "戊": FiveElements.EARTH,  # 무 - 토
+            "己": FiveElements.EARTH,  # 기 - 토
+            "庚": FiveElements.METAL,  # 경 - 금
+            "辛": FiveElements.METAL,  # 신 - 금
+            "壬": FiveElements.WATER,  # 임 - 수
+            "癸": FiveElements.WATER,  # 계 - 수
+        }
+        
+        # 지지 오행 매핑
+        self.jyunishi_five_elements = {
+            "寅": FiveElements.WOOD,   # 인 - 목
+            "卯": FiveElements.WOOD,   # 묘 - 목
+            "巳": FiveElements.FIRE,   # 사 - 화
+            "午": FiveElements.FIRE,   # 오 - 화
+            "辰": FiveElements.EARTH,  # 진 - 토
+            "戌": FiveElements.EARTH,  # 술 - 토
+            "丑": FiveElements.EARTH,  # 축 - 토
+            "未": FiveElements.EARTH,  # 미 - 토
+            "申": FiveElements.METAL,  # 신 - 금
+            "酉": FiveElements.METAL,  # 유 - 금
+            "亥": FiveElements.WATER,  # 해 - 수
+            "子": FiveElements.WATER,  # 자 - 수
+        }
 
     def _init_kanshi_data(self):
         """60간지 배열과 해시 초기화"""
@@ -115,6 +149,40 @@ class FourPillarsCalculator:
 
         return [year_pillar, month_pillar, day_pillar, time_pillar]
 
+    def _analyze_five_elements(self, pillars: List[str]) -> Tuple[List[FiveElements], List[FiveElements]]:
+        """사주팔자의 오행 분석"""
+        element_counts = Counter()
+        
+        # 모든 오행을 0으로 초기화
+        all_elements = [FiveElements.WOOD, FiveElements.FIRE, FiveElements.EARTH, FiveElements.METAL, FiveElements.WATER]
+        for element in all_elements:
+            element_counts[element] = 0
+        
+        for pillar in pillars:
+            if pillar is None:
+                continue
+                
+            # 천간과 지지 분리
+            jikkan = pillar[0]  # 첫 번째 글자는 천간
+            jyunishi = pillar[1]  # 두 번째 글자는 지지
+            
+            # 천간 오행 추가
+            if jikkan in self.jikkan_five_elements:
+                element_counts[self.jikkan_five_elements[jikkan]] += 1
+            
+            # 지지 오행 추가
+            if jyunishi in self.jyunishi_five_elements:
+                element_counts[self.jyunishi_five_elements[jyunishi]] += 1
+        
+        # 가장 많은 오행과 가장 적은 오행 찾기
+        max_count = max(element_counts.values())
+        min_count = min(element_counts.values())
+        
+        strong_elements = [element for element, count in element_counts.items() if count == max_count]
+        weak_elements = [element for element, count in element_counts.items() if count == min_count]
+        
+        return strong_elements, weak_elements
+
     def calculate_four_pillars(self, birth_date: datetime) -> FourPillar:
         """사주 계산 메인 함수"""
         year = birth_date.year
@@ -129,13 +197,21 @@ class FourPillarsCalculator:
             minute = None
 
         pillars = self._calculate_kanshi(year, month, day, hour, minute)
+        
+        # 오행 분석
+        strong_elements, weak_elements = self._analyze_five_elements(pillars)
+        
+        # FiveElements enum을 문자열로 변환
+        strong_elements_str = [element.value for element in strong_elements] if strong_elements else None
+        weak_elements_str = [element.value for element in weak_elements] if weak_elements else None
+        
         result: FourPillar = {
             "year_pillar": pillars[0],  # 년주
             "month_pillar": pillars[1],  # 월주
             "day_pillar": pillars[2],  # 일주
+            "time_pillar": pillars[3], # 시주
+            "strong_elements": strong_elements_str,
+            "weak_elements": weak_elements_str
         }
-
-        if pillars[3] is not None:
-            result["time_pillar"] = pillars[3]
 
         return result
