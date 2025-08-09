@@ -87,8 +87,8 @@ class LottoService:
                 else None
             ),
             "weak_element": (
-                four_pillar.get("weak_element")[0]
-                if four_pillar.get("weak_element")
+                four_pillar.get("weak_elements")[0]
+                if four_pillar.get("weak_elements")
                 else None
             ),
         }
