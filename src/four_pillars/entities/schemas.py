@@ -12,7 +12,7 @@ class FiveElements(str, Enum):
     WATER = "수(水)"  # 수
 
 
-class FourPillar(TypedDict):
+class FourPillar(TypedDict, total=False):
     year_pillar: str  # 년주
     month_pillar: str  # 월주
     day_pillar: str  # 일주
