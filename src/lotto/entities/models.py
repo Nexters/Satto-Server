@@ -1,4 +1,15 @@
-from sqlalchemy import Column, Integer, Date, CheckConstraint, BigInteger
+from sqlalchemy import (
+    Column,
+    Integer,
+    Date,
+    CheckConstraint,
+    BigInteger,
+    String,
+    DateTime,
+    JSON,
+    ForeignKey,
+)
+from sqlalchemy.orm import relationship
 
 from src.config.database import Base
 
@@ -35,3 +46,16 @@ class LottoDraws(Base):
         CheckConstraint(f"{col} BETWEEN 1 AND 45", name=f"{col}_range_check")
         for col in ["num1", "num2", "num3", "num4", "num5", "num6", "bonus_num"]
     )
+
+
+class LottoRecommendations(Base):
+    __tablename__ = "lotto_recommendations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(255), ForeignKey("users.id"), nullable=False)
+    round = Column(Integer, nullable=False)
+    content = Column(JSON, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
+
+    user = relationship("User", back_populates="lotto_recommendations")
