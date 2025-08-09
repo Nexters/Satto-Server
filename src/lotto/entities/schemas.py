@@ -4,6 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from src.config.schemas import CommonBase
+from src.four_pillars.entities.enums import FiveElements
 
 
 class LottoDraw(CommonBase):
@@ -66,6 +67,8 @@ class LottoRecommendationContent(BaseModel):
     infrequent_nums: List[int] = Field(
         description="등장 빈도가 낮은 숫자 (1-3개)", examples=[[1, 2]]
     )
+    strong_element: FiveElements = Field(description="강한 기운", examples=["화(火)"])
+    weak_element: FiveElements = Field(description="상충되는 기운", examples=["목(木)"])
 
 
 class LottoRecommendation(CommonBase):

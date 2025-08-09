@@ -110,10 +110,9 @@ class LottoService:
                 system_prompt=system_prompt, user_prompt=user_prompt
             )
 
-            # Parser를 사용하여 JSON 응답 파싱
+            # JSON 응답 파싱
             parsed_content = Parser.parse_json(response)
-            
-            # LottoRecommendationContent Pydantic 모델로 변환
+
             content = LottoRecommendationContent(
                 reason=parsed_content["reason"],
                 num1=parsed_content["num1"],
@@ -123,7 +122,9 @@ class LottoService:
                 num5=parsed_content["num5"],
                 num6=parsed_content["num6"],
                 cold_nums=parsed_content["cold_nums"],
-                infrequent_nums=infrequent_nums
+                infrequent_nums=infrequent_nums,
+                strong_element=lotto_prompt_data["strong_element"],
+                weak_element=lotto_prompt_data["weak_element"],
             )
 
         except Exception as e:

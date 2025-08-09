@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import List, Tuple, Dict
 from collections import Counter
 
-from src.four_pillars.entities.schemas import FourPillar, FiveElements
+from src.four_pillars.entities.schemas import FourPillar
+from src.four_pillars.entities.enums import FiveElements
 
 
 class FourPillarsCalculator:
