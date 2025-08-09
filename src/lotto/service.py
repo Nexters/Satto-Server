@@ -82,8 +82,8 @@ class LottoService:
             "day_pillar": four_pillar.get("day_pillar"),
             "time_pillar": four_pillar.get("time_pillar"),
             "strong_element": (
-                four_pillar.get("strong_element")[0]
-                if four_pillar.get("strong_element")
+                four_pillar.get("strong_elements")[0]
+                if four_pillar.get("strong_elements")
                 else None
             ),
             "weak_element": (
