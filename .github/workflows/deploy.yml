@@ -50,3 +50,6 @@ jobs:
 
             # 상태 확인
             docker compose -f docker-compose.dev.yml ps fastapi
+            
+            # 사용되지 않는 이미지 정리
+            docker system prune
