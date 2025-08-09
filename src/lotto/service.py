@@ -112,17 +112,19 @@ class LottoService:
 
             # Parser를 사용하여 JSON 응답 파싱
             parsed_content = Parser.parse_json(response)
-            content: LottoRecommendationContent = {
-                "reason": parsed_content["reason"],
-                "num1": parsed_content["num1"],
-                "num2": parsed_content["num2"],
-                "num3": parsed_content["num3"],
-                "num4": parsed_content["num4"],
-                "num5": parsed_content["num5"],
-                "num6": parsed_content["num6"],
-                "cold_nums": parsed_content["cold_nums"],
-                "infrequent_nums": infrequent_nums,
-            }
+            
+            # LottoRecommendationContent Pydantic 모델로 변환
+            content = LottoRecommendationContent(
+                reason=parsed_content["reason"],
+                num1=parsed_content["num1"],
+                num2=parsed_content["num2"],
+                num3=parsed_content["num3"],
+                num4=parsed_content["num4"],
+                num5=parsed_content["num5"],
+                num6=parsed_content["num6"],
+                cold_nums=parsed_content["cold_nums"],
+                infrequent_nums=infrequent_nums
+            )
 
         except Exception as e:
             logger.info(f"로또 추천 생성 실패: {traceback.format_exc()}")
@@ -132,7 +134,7 @@ class LottoService:
 
         # 5. 데이터베이스에 저장
         recommendation = await self.lotto_repository.create_lotto_recommendation(
-            user_id=user_id, round=latest_round + 1, content=content  # 다음 회차로 설정
+            user_id=user_id, round=latest_round + 1, content=content.model_dump()
         )
 
         return LottoRecommendation.model_validate(recommendation)
@@ -145,5 +147,13 @@ class LottoService:
             await self.lotto_repository.get_lotto_recommendation_by_user_id(user_id)
         )
         if recommendation:
-            return LottoRecommendation.model_validate(recommendation)
+            content = LottoRecommendationContent.model_validate(recommendation.content)
+            return LottoRecommendation(
+                id=recommendation.id,
+                user_id=recommendation.user_id,
+                round=recommendation.round,
+                content=content,
+                created_at=recommendation.created_at,
+                updated_at=recommendation.updated_at
+            )
         return None

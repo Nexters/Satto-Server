@@ -55,5 +55,15 @@ async def get_lotto_recommendation(
     user_id: str,
     lotto_service: LottoService = Depends(),
 ):
-    """사용자의 최신 로또 추천을 조회합니다."""
+    """
+    사용자의 최신 로또 추천을 조회합니다.
+    
+    content:
+    - reason: 사주 기반 로또 추천 이유
+    - num1, num2: 기운과 잘 맞는 숫자 (1-45)
+    - num3, num4: 재물운 좋을 때 나오는 숫자 (1-45)
+    - num5, num6: 최근 자주 나온 번호 (1-45)
+    - cold_nums: 기운과 상충하는 숫자 (1-3개)
+    - infrequent_nums: 등장 빈도가 낮은 숫자 (1-3개)
+    """
     return await lotto_service.get_lotto_recommendation(user_id=user_id)
