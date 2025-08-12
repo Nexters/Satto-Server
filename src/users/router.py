@@ -5,7 +5,11 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from src.lotto.entities.schemas import LottoRecommendation
 from src.lotto.service import LottoService
 from src.users.entities.schemas import UserCreate, UserDetail, UserList
+from src.fortune.entities.schemas import UserDailyFortuneSummary
 from src.users.service import UserService
+from src.fortune.service import FortuneService
+from typing import List
+from datetime import date
 
 user_router = APIRouter(prefix="/users", tags=["user"])
 
@@ -30,7 +34,6 @@ async def get_user(user_id: str, user_service: UserService = Depends()):
 async def create_user(user_create: UserCreate, user_service: UserService = Depends()):
     """새로운 사용자를 생성합니다."""
     return await user_service.create_user(user_create)
-
 
 @user_router.post("/{user_id}/lotto-recommendation", response_model=LottoRecommendation)
 async def create_lotto_recommendation(
@@ -69,3 +72,11 @@ async def get_lotto_recommendation(
     - weak_element: 상충되는 기운
     """
     return await lotto_service.get_lotto_recommendation(user_id=user_id)
+
+@user_router.get("/{user_id}/daily-fortunes", response_model=List[UserDailyFortuneSummary])
+async def get_user_daily_fortunes(
+    user_id: str,
+    fortune_date: date = Query(default=date.today()),
+    service: FortuneService = Depends(),
+):
+    return await service.get_user_daily_fortune_summaries(user_id, fortune_date)
