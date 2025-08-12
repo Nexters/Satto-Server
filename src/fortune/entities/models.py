@@ -1,5 +1,6 @@
 # src/fortune/entities/models.py
-from sqlalchemy import Column, Integer, Date, Enum as SAEnum, String, CheckConstraint, UniqueConstraint
+from sqlalchemy import Column, Integer, Date, Enum as SAEnum, String, CheckConstraint, ForeignKey
+from sqlalchemy.orm import relationship
 from src.config.database import Base
 from src.fortune.entities.enums import FortuneType
 
@@ -17,3 +18,11 @@ class DailyFortuneResource(Base):
         CheckConstraint("length(image_url) > 0", name="ck_fortune_image_url_len"),
         CheckConstraint("length(description) > 0", name="ck_fortune_description_len"),
     )
+
+class UserDailyFortuneSummary(Base):
+    __tablename__ = "user_daily_fortune_summary"
+
+    id = Column(Integer, primary_key=True, autoincrement=True, comment="운세 기록 고유 ID")
+    user_id = Column(String(255), ForeignKey("users.id"), nullable=False, comment="유저 ID")
+    daily_fortune_resource_id = Column(Integer, ForeignKey("daily_fortune_resources.id"), nullable=False, comment="운세 리소스 ID")
+    fortune_date = Column(Date, nullable=False, comment="운세 날짜")

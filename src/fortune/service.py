@@ -4,6 +4,7 @@ from typing import Optional, List
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.fortune.entities.models import DailyFortuneResource as DailyFortuneResourceModel
+from src.fortune.entities.schemas import UserDailyFortuneSummary
 from src.fortune.entities.schemas import (
     DailyFortuneResource,
     DailyFortuneResourceCreate,
@@ -72,3 +73,12 @@ class FortuneService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="리소스를 찾을 수 없습니다.")
         await self.session.delete(model)
         await self.session.commit()
+
+    async def get_user_daily_fortune_summaries(self, user_id: str, fortune_date: date) -> List[UserDailyFortuneSummary]:
+        summaries = await self.repository.get_user_daily_fortune_summaries(user_id, fortune_date)
+        if not summaries:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="오늘의 운세 데이터를 찾을 수 없습니다."
+            )
+        return summaries  # 그냥 리스트를 반환

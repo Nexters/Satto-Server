@@ -5,8 +5,9 @@ from fastapi import Depends
 from sqlalchemy import select, desc, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.dependencies import get_db_session
-from src.fortune.entities.models import DailyFortuneResource as DailyFortuneResourceModel
+from src.fortune.entities.models import UserDailyFortuneSummary as UserDailyFortuneSummaryModel, DailyFortuneResource as DailyFortuneResourceModel
 from src.fortune.entities.enums import FortuneType
+from src.fortune.entities.schemas import UserDailyFortuneSummary
 
 
 class FortuneRepository:
@@ -42,3 +43,37 @@ class FortuneRepository:
 
     async def get_fortune_by_id(self, resource_id: int) -> Optional[DailyFortuneResourceModel]:
         return await self.session.get(DailyFortuneResourceModel, resource_id)
+
+    async def get_user_daily_fortune_summaries(
+            self, user_id: str, fortune_date: date
+    ) -> List[UserDailyFortuneSummary]:
+        query = select(
+            UserDailyFortuneSummaryModel.id,
+            UserDailyFortuneSummaryModel.user_id,
+            UserDailyFortuneSummaryModel.fortune_date,
+            DailyFortuneResourceModel.fortune_type,
+            DailyFortuneResourceModel.image_url,
+            DailyFortuneResourceModel.description
+        ).join(
+            DailyFortuneResourceModel,
+            UserDailyFortuneSummaryModel.daily_fortune_resource_id == DailyFortuneResourceModel.id
+        ).filter(
+            UserDailyFortuneSummaryModel.user_id == user_id,
+            UserDailyFortuneSummaryModel.fortune_date == fortune_date
+        )
+
+        result = await self.session.execute(query)
+        summaries = result.fetchall()
+
+        # 반환할 데이터를 Pydantic 모델로 변환하여 반환
+        return [
+            UserDailyFortuneSummary(
+                id=summary[0],
+                user_id=summary[1],
+                fortune_date=summary[2],
+                fortune_type=summary[3],
+                image_url=summary[4],
+                description=summary[5]
+            )
+            for summary in summaries
+        ]

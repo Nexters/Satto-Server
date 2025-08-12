@@ -1,4 +1,4 @@
-# src/fortune/router.py
+# src/fortune/admin_router.py
 from datetime import date
 from typing import Optional
 from fastapi import APIRouter, Depends, Query, Path, HTTPException, status
@@ -11,10 +11,10 @@ from src.fortune.entities.schemas import (
 from src.fortune.service import FortuneService
 from src.fortune.entities.enums import FortuneType
 
-fortune_router = APIRouter(prefix="/admin/fortune", tags=["fortune-admin"])
+admin_fortune_router = APIRouter(prefix="/admin/fortune", tags=["fortune-admin"])
 
 
-@fortune_router.get(
+@admin_fortune_router.get(
     "/resources",
     response_model=DailyFortuneResourceList,
     summary="운세 리소스 목록 조회 (관리자)",
@@ -29,7 +29,7 @@ async def list_fortune_resources(
     return await service.list_fortunes(cursor, limit, publish_date, fortune_type)
 
 
-@fortune_router.post(
+@admin_fortune_router.post(
     "/resources",
     response_model=DailyFortuneResource,
     status_code=status.HTTP_201_CREATED,
@@ -42,7 +42,7 @@ async def create_fortune_resource(
     return await service.create_fortune(body)
 
 
-@fortune_router.patch(
+@admin_fortune_router.patch(
     "/resources/{resource_id}",
     response_model=DailyFortuneResource,
     summary="운세 리소스 수정 (관리자)",
@@ -55,7 +55,7 @@ async def update_fortune_resource(
     return await service.update_fortune(resource_id, body)
 
 
-@fortune_router.delete(
+@admin_fortune_router.delete(
     "/resources/{resource_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="운세 리소스 삭제 (관리자)",

@@ -30,3 +30,11 @@ class DailyFortuneResourceUpdate(CommonBase):
     fortune_type: Optional[FortuneType] = None
     image_url: Optional[str] = None
     description: Optional[str] = None
+
+class UserDailyFortuneSummary(CommonBase):
+    id: int
+    user_id: str
+    fortune_date: date
+    fortune_type: FortuneType
+    image_url: str
+    description: str
