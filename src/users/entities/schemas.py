@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from src.config.schemas import CommonBase
-from src.four_pillars.entities.schemas import FourPillar
+from src.four_pillars.entities.schemas import FourPillarDetail
 from src.users.entities.enums import Gender
 
 
@@ -31,7 +31,7 @@ class UserDetail(CommonBase):
     name: str
     birth_date: datetime
     gender: Gender
-    four_pillar: Optional[FourPillar] = None
+    four_pillar: Optional[FourPillarDetail] = None
 
 
 class UserList(CommonBase):

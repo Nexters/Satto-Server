@@ -2,6 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, HTTPException
 
+from src.four_pillars.entities.schemas import FourPillarDetail
 from src.lotto.entities.schemas import LottoRecommendation
 from src.lotto.service import LottoService
 from src.users.entities.schemas import UserCreate, UserDetail, UserList, UserUpdate
@@ -30,6 +31,23 @@ async def get_user(user_id: str, user_service: UserService = Depends()):
 async def create_user(user_create: UserCreate, user_service: UserService = Depends()):
     """새로운 사용자를 생성합니다."""
     return await user_service.create_user(user_create)
+
+
+@user_router.get("/{user_id}/four-pillar", response_model=FourPillarDetail)
+async def get_user_four_pillar(user_id: str, user_service: UserService = Depends()):
+    """
+    사용자의 사주 정보를 조회합니다.
+
+    Returns:
+    - strong_element: 가장 강한 오행
+    - weak_element: 가장 약한 오행
+    - description: 사주 종합 설명
+    - year_pillar_detail: 년주 상세 정보 (천간, 지지, 십신, 오행)
+    - month_pillar_detail: 월주 상세 정보 (천간, 지지, 십신, 오행)
+    - day_pillar_detail: 일주 상세 정보 (천간, 지지, 십신, 오행)
+    - time_pillar_detail: 시주 상세 정보 (천간, 지지, 십신, 오행)
+    """
+    return await user_service.get_user_four_pillar(user_id)
 
 
 @user_router.put("/{user_id}", response_model=UserDetail)
