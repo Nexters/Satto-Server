@@ -49,7 +49,7 @@ async def create_fortune_resource(
 )
 async def update_fortune_resource(
     resource_id: int = Path(..., description="운세 리소스 ID"),
-    body: DailyFortuneResourceUpdate = None,
+    body: DailyFortuneResourceUpdate,
     service: FortuneService = Depends(),
 ):
     return await service.update_fortune(resource_id, body)
