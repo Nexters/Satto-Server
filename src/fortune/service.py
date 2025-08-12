@@ -41,38 +41,33 @@ class FortuneService:
         )
 
     async def create_fortune(self, dto: DailyFortuneResourceCreate) -> DailyFortuneResource:
-        model = DailyFortuneResourceModel(
+        # DTO에서 개별 필드를 추출하여 리포지토리 메서드 호출
+        model = await self.repository.create_fortune(
             publish_date=dto.publish_date,
             fortune_type=dto.fortune_type,
             image_url=dto.image_url,
-            description=dto.description,
+            description=dto.description
         )
-        self.session.add(model)
-        await self.session.commit()
-        await self.session.refresh(model)
+
+        # DB 모델을 DTO로 변환하여 반환
         return DailyFortuneResource.model_validate(model)
 
     async def update_fortune(self, resource_id: int, dto: DailyFortuneResourceUpdate) -> DailyFortuneResource:
-        model = await self.repository.get_fortune_by_id(resource_id)
-        if not model:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="리소스를 찾을 수 없습니다.")
+        model = await self.repository.update_fortune(
+            resource_id=resource_id,
+            publish_date=dto.publish_date,
+            fortune_type=dto.fortune_type,
+            image_url=dto.image_url,
+            description=dto.description
+        )
 
-        # 부분 수정 반영
-        for field in ("publish_date", "fortune_type", "image_url", "description"):
-            value = getattr(dto, field)
-            if value is not None:
-                setattr(model, field, value)
-
-        await self.session.commit()
-        await self.session.refresh(model)
         return DailyFortuneResource.model_validate(model)
 
     async def delete_fortune(self, resource_id: int) -> None:
-        model = await self.repository.get_fortune_by_id(resource_id)
-        if not model:
+        try:
+            await self.repository.delete_fortune(resource_id)
+        except ValueError:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="리소스를 찾을 수 없습니다.")
-        await self.session.delete(model)
-        await self.session.commit()
 
     async def get_user_daily_fortune_summaries(self, user_id: str, fortune_date: date) -> List[UserDailyFortuneSummary]:
         summaries = await self.repository.get_user_daily_fortune_summaries(user_id, fortune_date)
