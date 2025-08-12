@@ -36,6 +36,7 @@ async def create_user(user_create: UserCreate, user_service: UserService = Depen
     """새로운 사용자를 생성합니다."""
     return await user_service.create_user(user_create)
 
+
 @user_router.get("/{user_id}/four-pillar", response_model=FourPillarDetail)
 async def get_user_four_pillar(user_id: str, user_service: UserService = Depends()):
     """
@@ -51,7 +52,6 @@ async def get_user_four_pillar(user_id: str, user_service: UserService = Depends
     - time_pillar_detail: 시주 상세 정보 (천간, 지지, 십신, 오행)
     """
     return await user_service.get_user_four_pillar(user_id)
-
 
 @user_router.put("/{user_id}", response_model=UserDetail)
 async def update_user(
@@ -76,7 +76,6 @@ async def create_lotto_recommendation(
         raise HTTPException(
             status_code=500, detail=f"로또 추천 생성 중 오류가 발생했습니다: {str(e)}"
         )
-
 
 @user_router.get(
     "/{user_id}/lotto-recommendation", response_model=Optional[LottoRecommendation]

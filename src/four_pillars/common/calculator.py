@@ -19,6 +19,7 @@ class FourPillarsCalculator:
         self._init_five_elements_mapping()
         self._init_ten_gods_mapping()
 
+
     def _init_five_elements_mapping(self):
         """천간과 지지의 오행 매핑 초기화"""
         # 천간 오행 매핑
