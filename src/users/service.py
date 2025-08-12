@@ -1,8 +1,9 @@
 from fastapi import Depends, HTTPException
 
 from src.four_pillars.common.calculator import FourPillarsCalculator
-from src.users.entities.schemas import UserCreate, UserDetail, UserList
+from src.users.entities.schemas import UserCreate, UserDetail, UserList, UserUpdate
 from src.users.repository import UserRepository
+from src.four_pillars.entities.schemas import FourPillarDetail
 
 
 class UserService:
@@ -30,9 +31,32 @@ class UserService:
         if existing_user:
             raise HTTPException(status_code=400, detail="User ID already exists")
 
-        four_pillar = self.four_pillar_calculator.calculate_four_pillars(
+        four_pillar = self.four_pillar_calculator.calculate_four_pillars_detailed(
             user_create.birth_date
         )
         created_user = await self.repository.create_user(user_create, four_pillar)
 
         return UserDetail.model_validate(created_user)
+
+    async def get_user_four_pillar(self, user_id: str) -> FourPillarDetail:
+        """사용자의 사주 정보만 조회"""
+        four_pillar_dict = await self.repository.get_user_four_pillar(user_id)
+        if not four_pillar_dict:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return FourPillarDetail.model_validate(four_pillar_dict)
+
+    async def update_user(self, user_id: str, user_update: UserUpdate) -> UserDetail:
+        four_pillar = None
+        if user_update.birth_date:
+            four_pillar = self.four_pillar_calculator.calculate_four_pillars_detailed(
+                user_update.birth_date
+            )
+
+        updated_user = await self.repository.update_user(
+            user_id, user_update, four_pillar
+        )
+        if not updated_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return UserDetail.model_validate(updated_user)

@@ -26,7 +26,8 @@ load_dotenv()
 
 from src.config.database import Mysql
 from src.config.config import db_config
-from src.lotto.entities.models import LottoDraws, LottoStatistics
+from src.lotto.entities.models import LottoDraws, LottoStatistics, LottoRecommendations
+from src.users.entities.models import User
 
 
 class LottoDataImporter:
