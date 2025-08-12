@@ -26,7 +26,9 @@ class UserRepository:
 
     async def get_user_four_pillar(self, user_id: str) -> Optional[dict]:
         """사용자의 사주 정보만 조회"""
-        query = select(User.four_pillar).where(User.id == user_id, User.is_active == True)
+        query = select(User.four_pillar).where(
+            User.id == user_id, User.is_active == True
+        )
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
@@ -50,19 +52,25 @@ class UserRepository:
 
         return user
 
-    async def update_user(self, user_id: str, user_update: UserUpdate, four_pillar: Optional[FourPillar] = None) -> Optional[User]:
+    async def update_user(
+        self,
+        user_id: str,
+        user_update: UserUpdate,
+        four_pillar: Optional[FourPillarDetail] = None,
+    ) -> Optional[User]:
         user = await self.get_user_by_id(user_id)
         if not user:
             return None
 
         update_data = user_update.model_dump(exclude_unset=True)
         if four_pillar is not None:
-            update_data["four_pillar"] = four_pillar
+            four_pillar_dict = four_pillar.model_dump()
+            update_data["four_pillar"] = four_pillar_dict
 
         for field, value in update_data.items():
             setattr(user, field, value)
-        
+
         await self.session.flush()
         await self.session.refresh(user)
-        
+
         return user
