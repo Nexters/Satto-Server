@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Boolean, DateTime, Enum, JSON
+from sqlalchemy.orm import relationship
 
 from src.config.database import Base
 from src.users.entities.enums import Gender
@@ -13,3 +14,5 @@ class User(Base):
     gender = Column(Enum(Gender), nullable=False)
     four_pillar = Column(JSON, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+
+    lotto_recommendations = relationship("LottoRecommendations", back_populates="user")

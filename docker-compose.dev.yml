@@ -20,9 +20,9 @@ services:
     image: satto-registry.kr.ncr.ntruss.com/satto-server-fastapi:latest
     pull_policy: always
     container_name: fastapi-app
-    depends_on:
-      mysql:
-        condition: service_healthy
+#    depends_on:
+#      mysql:
+#        condition: service_healthy
     volumes:
       - ${WRITABLE_DIR}/logs/app:/data/logs/app
     command: >
