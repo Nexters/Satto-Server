@@ -81,4 +81,4 @@ class FortuneService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="오늘의 운세 데이터를 찾을 수 없습니다."
             )
-        return summaries  # 그냥 리스트를 반환
+        return summaries  # Return the list directly
