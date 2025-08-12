@@ -33,7 +33,14 @@ async def get_user(user_id: str, user_service: UserService = Depends()):
 
 @user_router.post("", response_model=UserDetail, status_code=201)
 async def create_user(user_create: UserCreate, user_service: UserService = Depends()):
-    """새로운 사용자를 생성합니다."""
+    """새로운 사용자를 생성합니다.
+    - id: device 고유 식별자
+    - name: 사용자 이름
+    - birth_date: 사용자 생년월일시 (YYYY-MM-DD HH:MM:SS 형식)
+      - 생시를 모르는 경우 입력하지 않음 (YYYY-MM-DD 형식)
+      - 선택한 시간 범위에서 가장 빠른 시간으로 입력 (예, 23:00:00 ~ 00:59:59의 경우 23:00:00로 입
+    - gender: 사용자 성별 (M/F)
+    """
     return await user_service.create_user(user_create)
 
 
@@ -47,6 +54,12 @@ async def get_user_four_pillar(user_id: str, user_service: UserService = Depends
     - weak_element: 가장 약한 오행
     - description: 사주 종합 설명
     - year_pillar_detail: 년주 상세 정보 (천간, 지지, 십신, 오행)
+      - stem: 천간 (첫번째 글자)
+      - branch: 지지 (두번째 글자)
+      - stem_ten_god: 천간의 십신
+      - branch_ten_god: 지지의 십신
+      - stem_element: 천간의 오행
+      - branch_element: 지지의 오행
     - month_pillar_detail: 월주 상세 정보 (천간, 지지, 십신, 오행)
     - day_pillar_detail: 일주 상세 정보 (천간, 지지, 십신, 오행)
     - time_pillar_detail: 시주 상세 정보 (천간, 지지, 십신, 오행)
