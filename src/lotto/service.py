@@ -70,8 +70,11 @@ class LottoService:
         # 3. 통계 데이터 조회
         frequent_nums = await self.lotto_repository.get_frequent_numbers(limit=10)
         infrequent_nums = await self.lotto_repository.get_excluded_numbers(limit=2)
+        
+        # 4. 최신 회차 당첨금 조회
+        latest_prize_amount = await self.lotto_repository.get_latest_prize_amount()
 
-        # 4. HCX API 호출하여 로또 추천 생성
+        # 5. HCX API 호출하여 로또 추천 생성
         hcx_client = HCXClient()
 
         # 사용자 사주 정보 사용
@@ -81,16 +84,8 @@ class LottoService:
             "month_pillar": four_pillar.get("month_pillar"),
             "day_pillar": four_pillar.get("day_pillar"),
             "time_pillar": four_pillar.get("time_pillar"),
-            "strong_element": (
-                four_pillar.get("strong_elements")[0]
-                if four_pillar.get("strong_elements")
-                else None
-            ),
-            "weak_element": (
-                four_pillar.get("weak_elements")[0]
-                if four_pillar.get("weak_elements")
-                else None
-            ),
+            "strong_element": four_pillar.get("strong_element"),
+            "weak_element": four_pillar.get("weak_element"),
         }
 
         # HCXUtils를 사용하여 프롬프트 가져오기
@@ -125,6 +120,7 @@ class LottoService:
                 infrequent_nums=infrequent_nums,
                 strong_element=lotto_prompt_data["strong_element"],
                 weak_element=lotto_prompt_data["weak_element"],
+                last_prize_amount=latest_prize_amount or 0,
             )
 
         except Exception as e:
@@ -133,7 +129,7 @@ class LottoService:
                 status_code=400, detail=f"로또 추천 생성 실패: {str(e)}"
             )
 
-        # 5. 데이터베이스에 저장
+        # 6. 데이터베이스에 저장
         recommendation = await self.lotto_repository.create_lotto_recommendation(
             user_id=user_id, round=latest_round + 1, content=content.model_dump()
         )
