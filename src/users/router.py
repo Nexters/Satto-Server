@@ -38,7 +38,7 @@ async def create_user(user_create: UserCreate, user_service: UserService = Depen
     - name: 사용자 이름
     - birth_date: 사용자 생년월일시 (YYYY-MM-DD HH:MM:SS 형식)
       - 생시를 모르는 경우 입력하지 않음 (YYYY-MM-DD 형식)
-      - 선택한 시간 범위에서 가장 빠른 시간으로 입력 (예, 23:00:00 ~ 00:59:59의 경우 23:00:00로 입
+      - 선택한 시간 범위에서 가장 빠른 시간으로 입력 (ex. 23:00:00 ~ 00:59:59의 경우 23:00:00로 입력)
     - gender: 사용자 성별 (M/F)
     """
     return await user_service.create_user(user_create)
@@ -66,14 +66,14 @@ async def get_user_four_pillar(user_id: str, user_service: UserService = Depends
     """
     return await user_service.get_user_four_pillar(user_id)
 
+
 @user_router.put("/{user_id}", response_model=UserDetail)
 async def update_user(
-    user_id: str,
-    user_update: UserUpdate,
-    user_service: UserService = Depends()
+    user_id: str, user_update: UserUpdate, user_service: UserService = Depends()
 ):
     """사용자 정보를 수정합니다."""
     return await user_service.update_user(user_id, user_update)
+
 
 @user_router.post("/{user_id}/lotto-recommendation", response_model=LottoRecommendation)
 async def create_lotto_recommendation(
@@ -90,6 +90,7 @@ async def create_lotto_recommendation(
             status_code=500, detail=f"로또 추천 생성 중 오류가 발생했습니다: {str(e)}"
         )
 
+
 @user_router.get(
     "/{user_id}/lotto-recommendation", response_model=Optional[LottoRecommendation]
 )
@@ -99,7 +100,7 @@ async def get_lotto_recommendation(
 ):
     """
     사용자의 최신 로또 추천을 조회합니다.
-    
+
     content:
     - reason: 사주 기반 로또 추천 이유
     - num1, num2: 기운과 잘 맞는 숫자 (1-45)
@@ -107,12 +108,16 @@ async def get_lotto_recommendation(
     - num5, num6: 최근 자주 나온 번호 (1-45)
     - cold_nums: 기운과 상충하는 숫자 (1-3개)
     - infrequent_nums: 등장 빈도가 낮은 숫자 (1-3개)
+    - last_prize_amount: 지난 회차 1등 당첨금 (1인당 수령액)
     - strong_element: 강한 기운
     - weak_element: 상충되는 기운
     """
     return await lotto_service.get_lotto_recommendation(user_id=user_id)
 
-@user_router.get("/{user_id}/daily-fortunes", response_model=List[UserDailyFortuneSummary])
+
+@user_router.get(
+    "/{user_id}/daily-fortunes", response_model=List[UserDailyFortuneSummary]
+)
 async def get_user_daily_fortunes(
     user_id: str,
     fortune_date: date = Query(default=date.today()),
