@@ -1,12 +1,17 @@
-# src/fortune/repository.py
 from datetime import date
 from typing import List, Optional, Tuple
+
 from fastapi import Depends
 from sqlalchemy import select, desc, and_
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.common.dependencies import get_db_session
-from src.fortune.entities.models import UserDailyFortuneSummary as UserDailyFortuneSummaryModel, DailyFortuneResource as DailyFortuneResourceModel
 from src.fortune.entities.enums import FortuneType
+from src.fortune.entities.models import (
+    UserDailyFortuneSummary as UserDailyFortuneSummaryModel,
+    DailyFortuneResource as DailyFortuneResourceModel,
+    UserDailyFortuneDetail as UserDailyFortuneDetailModel,
+)
 from src.fortune.entities.schemas import UserDailyFortuneSummary
 
 
@@ -19,7 +24,7 @@ class FortuneRepository:
         publish_date: date,
         fortune_type: FortuneType,
         image_url: str,
-        description: str
+        description: str,
     ) -> DailyFortuneResourceModel:
         model = DailyFortuneResourceModel(
             publish_date=publish_date,
@@ -28,7 +33,7 @@ class FortuneRepository:
             description=description,
         )
         self.session.add(model)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(model)
         return model  # DB 모델 반환
 
@@ -38,7 +43,7 @@ class FortuneRepository:
         publish_date: Optional[date],
         fortune_type: Optional[FortuneType],
         image_url: Optional[str],
-        description: Optional[str]
+        description: Optional[str],
     ) -> DailyFortuneResourceModel:
         model = await self.get_fortune_by_id(resource_id)
         if not model:
@@ -53,7 +58,7 @@ class FortuneRepository:
         if description is not None:
             model.description = description
 
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(model)
         return model
 
@@ -62,7 +67,7 @@ class FortuneRepository:
         if not model:
             raise ValueError("리소스를 찾을 수 없습니다.")
         await self.session.delete(model)
-        await self.session.commit()
+        await self.session.flush()
 
     async def get_fortunes(
         self,
@@ -71,7 +76,9 @@ class FortuneRepository:
         publish_date: Optional[date] = None,
         fortune_type: Optional[FortuneType] = None,
     ) -> Tuple[List[DailyFortuneResourceModel], Optional[int]]:
-        query = select(DailyFortuneResourceModel).order_by(desc(DailyFortuneResourceModel.id))
+        query = select(DailyFortuneResourceModel).order_by(
+            desc(DailyFortuneResourceModel.id)
+        )
 
         conditions = []
         if cursor:
@@ -91,25 +98,32 @@ class FortuneRepository:
         next_cursor = items[-1].id if len(items) == limit else None
         return items, next_cursor
 
-    async def get_fortune_by_id(self, resource_id: int) -> Optional[DailyFortuneResourceModel]:
+    async def get_fortune_by_id(
+        self, resource_id: int
+    ) -> Optional[DailyFortuneResourceModel]:
         return await self.session.get(DailyFortuneResourceModel, resource_id)
 
     async def get_user_daily_fortune_summaries(
-            self, user_id: str, fortune_date: date
+        self, user_id: str, fortune_date: date
     ) -> List[UserDailyFortuneSummary]:
-        query = select(
-            UserDailyFortuneSummaryModel.id,
-            UserDailyFortuneSummaryModel.user_id,
-            UserDailyFortuneSummaryModel.fortune_date,
-            DailyFortuneResourceModel.fortune_type,
-            DailyFortuneResourceModel.image_url,
-            DailyFortuneResourceModel.description
-        ).join(
-            DailyFortuneResourceModel,
-            UserDailyFortuneSummaryModel.daily_fortune_resource_id == DailyFortuneResourceModel.id
-        ).filter(
-            UserDailyFortuneSummaryModel.user_id == user_id,
-            UserDailyFortuneSummaryModel.fortune_date == fortune_date
+        query = (
+            select(
+                UserDailyFortuneSummaryModel.id,
+                UserDailyFortuneSummaryModel.user_id,
+                UserDailyFortuneSummaryModel.fortune_date,
+                DailyFortuneResourceModel.fortune_type,
+                DailyFortuneResourceModel.image_url,
+                DailyFortuneResourceModel.description,
+            )
+            .join(
+                DailyFortuneResourceModel,
+                UserDailyFortuneSummaryModel.daily_fortune_resource_id
+                == DailyFortuneResourceModel.id,
+            )
+            .filter(
+                UserDailyFortuneSummaryModel.user_id == user_id,
+                UserDailyFortuneSummaryModel.fortune_date == fortune_date,
+            )
         )
 
         result = await self.session.execute(query)
@@ -123,7 +137,39 @@ class FortuneRepository:
                 fortune_date=summary[2],
                 fortune_type=summary[3],
                 image_url=summary[4],
-                description=summary[5]
+                description=summary[5],
             )
             for summary in summaries
         ]
+
+    async def get_user_daily_fortune_detail(
+        self, user_id: str, fortune_date: date
+    ) -> Optional[UserDailyFortuneDetailModel]:
+        """특정 날짜의 사용자 운세 상세 정보 조회"""
+        query = select(UserDailyFortuneDetailModel).filter(
+            UserDailyFortuneDetailModel.user_id == user_id,
+            UserDailyFortuneDetailModel.fortune_date == fortune_date,
+        )
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def create_user_daily_fortune_detail(
+        self,
+        user_id: str,
+        fortune_date: date,
+        fortune_score: int,
+        fortune_comment: str,
+        fortune_details: dict,
+    ) -> UserDailyFortuneDetailModel:
+        """사용자 운세 상세 정보 생성"""
+        model = UserDailyFortuneDetailModel(
+            user_id=user_id,
+            fortune_date=fortune_date,
+            fortune_score=fortune_score,
+            fortune_comment=fortune_comment,
+            fortune_details=fortune_details,
+        )
+        self.session.add(model)
+        await self.session.flush()
+        await self.session.refresh(model)
+        return model

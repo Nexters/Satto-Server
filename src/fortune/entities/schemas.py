@@ -1,6 +1,6 @@
 # src/fortune/entities/schemas.py
 from datetime import date
-from typing import List, Optional
+from typing import List, Optional, Dict
 from src.config.schemas import CommonBase
 from src.fortune.entities.enums import FortuneType
 
@@ -38,3 +38,11 @@ class UserDailyFortuneSummary(CommonBase):
     fortune_type: FortuneType
     image_url: str
     description: str
+
+class UserDailyFortuneDetail(CommonBase):
+    id: int
+    user_id: str
+    fortune_date: date
+    fortune_score: int
+    fortune_comment: str
+    fortune_details: Dict[str, str]

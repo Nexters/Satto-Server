@@ -55,7 +55,5 @@ class LottoRecommendations(Base):
     user_id = Column(String(255), ForeignKey("users.id"), nullable=False)
     round = Column(Integer, nullable=False)
     content = Column(JSON, nullable=False)
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
 
     user = relationship("User", back_populates="lotto_recommendations")
