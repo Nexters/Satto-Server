@@ -13,10 +13,12 @@ from src.fortune.entities.schemas import (
 )
 from src.fortune.entities.schemas import UserDailyFortuneSummary
 from src.fortune.repository import FortuneRepository
+from src.fortune.entities.constants import DAILY_FORTUNE_FALLBACK_DATA
 from src.hcx_client.client import HCXClient
 from src.hcx_client.common.parser import Parser
 from src.hcx_client.common.utils import HCXUtils
 from src.users.repository import UserRepository
+from src.common.logger import logger
 
 
 class FortuneService:
@@ -145,18 +147,23 @@ class FortuneService:
 
         user_prompt = user_prompt_template.format(**fortune_prompt_data)
 
-        # HCX API 호출
-        response_content = await hcx_client.call_completion(
-            system_prompt=system_prompt, user_prompt=user_prompt
-        )
-
-        # 3. 응답 파싱
+        # HCX API 호출 및 fallback 처리
+        fortune_data = None
         try:
-            fortune_data = Parser.parse_json(response_content)
-        except Exception as e:
-            raise HTTPException(
-                status_code=500, detail=f"운세 데이터 파싱 실패: {str(e)}"
+            response_content = await hcx_client.call_completion(
+                system_prompt=system_prompt, user_prompt=user_prompt
             )
+
+            # 3. 응답 파싱
+            fortune_data = Parser.parse_json(response_content)
+            logger.info(f"HCX API 호출 성공: 사용자 {user_id}의 운세 데이터 생성 완료")
+
+        except Exception as e:
+            logger.warning(
+                f"HCX API 호출 또는 파싱 실패, fallback 데이터 사용: {str(e)}"
+            )
+            # fallback 데이터 사용
+            fortune_data = DAILY_FORTUNE_FALLBACK_DATA
 
         # 4. fortune_details 구성
         fortune_details = {
