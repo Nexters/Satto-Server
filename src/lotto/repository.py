@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List, Optional, Tuple
 
 from fastapi import Depends
@@ -61,16 +60,13 @@ class LottoRepository:
         self, user_id: str, round: int, content: dict
     ) -> LottoRecommendations:
         """로또 추천을 생성합니다."""
-        now = datetime.utcnow()
         recommendation = LottoRecommendations(
             user_id=user_id,
             round=round,
             content=content,
-            created_at=now,
-            updated_at=now,
         )
         self.session.add(recommendation)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(recommendation)
         return recommendation
 
@@ -97,9 +93,7 @@ class LottoRepository:
         result = await self.session.execute(query)
         return [row[0] for row in result.fetchall()]
 
-    async def get_excluded_numbers(
-        self, recent_rounds: int = 20, limit: int = 2
-    ) -> List[int]:
+    async def get_excluded_numbers(self, limit: int = 2) -> List[int]:
         """last_round 기준 오름차순으로 정렬했을 때 가장 마지막 2개 번호를 조회합니다 (최근에 가장 안나온 번호)."""
         query = (
             select(LottoStatistics.num)
