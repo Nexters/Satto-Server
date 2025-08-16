@@ -8,3 +8,10 @@ class FortuneType(str, Enum):
     LUCKY_OBJECT = "행운의 오브제"
     PERFECT_TIMING = "절호의 타이밍"
     TABOO_OF_DAY = "오늘의 금기"
+
+
+class FortuneDetailType(str, Enum):
+    """운세 상세 항목 타입"""
+    MONEY = "money"
+    JOB = "job"
+    LOVE = "love"

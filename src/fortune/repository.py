@@ -159,7 +159,7 @@ class FortuneRepository:
         fortune_date: date,
         fortune_score: int,
         fortune_comment: str,
-        fortune_details: dict,
+        fortune_details: List[dict],
     ) -> UserDailyFortuneDetailModel:
         """사용자 운세 상세 정보 생성"""
         model = UserDailyFortuneDetailModel(
