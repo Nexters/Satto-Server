@@ -1,3 +1,4 @@
+from datetime import datetime, time
 from typing import List, Optional
 
 from fastapi import Depends
@@ -33,14 +34,18 @@ class UserRepository:
         return result.scalar_one_or_none()
 
     async def create_user(
-        self, user_create: UserCreate, four_pillar: FourPillarDetail
+        self,
+        user_create: UserCreate,
+        four_pillar: FourPillarDetail,
+        birth_datetime: datetime = None,
     ) -> User:
         four_pillar_dict = four_pillar.model_dump()
 
         user = User(
             id=user_create.id,
             name=user_create.name,
-            birth_date=user_create.birth_date,
+            birth_date=birth_datetime
+            or datetime.combine(user_create.birth_date, time(0, 0)),
             gender=user_create.gender,
             four_pillar=four_pillar_dict,
             is_active=True,
@@ -57,12 +62,18 @@ class UserRepository:
         user_id: str,
         user_update: UserUpdate,
         four_pillar: Optional[FourPillarDetail] = None,
+        birth_datetime: Optional[datetime] = None,
     ) -> Optional[User]:
         user = await self.get_user_by_id(user_id)
         if not user:
             return None
 
         update_data = user_update.model_dump(exclude_unset=True)
+
+        # birth_datetime이 제공된 경우 birth_date 업데이트
+        if birth_datetime is not None:
+            update_data["birth_date"] = birth_datetime
+
         if four_pillar is not None:
             four_pillar_dict = four_pillar.model_dump()
             update_data["four_pillar"] = four_pillar_dict
