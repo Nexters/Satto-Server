@@ -1,4 +1,5 @@
 import traceback
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 from fastapi import Depends, HTTPException
@@ -28,6 +29,31 @@ class LottoService:
 
         self.lotto_repository = lotto_repository
         self.user_repository = user_repository
+
+    def _get_current_lotto_period(self) -> tuple[datetime, datetime]:
+        """
+        현재 시간 기준으로 로또 추천 유효 기간을 계산합니다.
+        지난 토요일 오후 9시(21시)부터 이번주 토요일 오후 9시 전까지
+        """
+        # 한국 시간대 (UTC+9)
+        KST_OFFSET = timedelta(hours=9)
+        
+        # 현재 UTC 시간을 한국 시간으로 변환
+        now_utc = datetime.utcnow()
+        now_kst = now_utc + KST_OFFSET
+        
+        # 이번 주 토요일 오후 9시(21시) 계산
+        days_until_saturday = (5 - now_kst.weekday()) % 7  # 5 = 토요일
+        
+        this_saturday_9pm = now_kst.replace(
+            hour=21, minute=0, second=0, microsecond=0
+        ) + timedelta(days=days_until_saturday)
+        
+        # 지난 토요일 오후 9시(21시) 계산
+        last_saturday_9pm = this_saturday_9pm - timedelta(days=7)
+        
+        logger.info(f"로또 추천 유효 기간: {last_saturday_9pm} ~ {this_saturday_9pm}")
+        return last_saturday_9pm, this_saturday_9pm
 
     async def get_lotto_draws(
         self, cursor: Optional[int] = None, limit: int = 10
@@ -136,8 +162,14 @@ class LottoService:
         self, user_id: str
     ) -> Optional[LottoRecommendation]:
         """사용자의 최신 로또 추천을 조회합니다."""
+        # 로또 추천 유효 기간 계산
+        start_time, end_time = self._get_current_lotto_period()
+
+        # 유효 기간 내에서만 추천 조회
         recommendation = (
-            await self.lotto_repository.get_lotto_recommendation_by_user_id(user_id)
+            await self.lotto_repository.get_lotto_recommendation_by_user_id(
+                user_id, start_time, end_time
+            )
         )
 
         if recommendation:
