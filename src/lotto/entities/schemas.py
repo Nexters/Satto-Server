@@ -92,10 +92,9 @@ class LottoRecommendationContent(BaseModel):
 
 
 class LottoRecommendation(CommonBase):
-    id: int
     user_id: str
     round: int
-    content: LottoRecommendationContent
+    content: Optional[LottoRecommendationContent] = None
 
 
 class LottoRecommendationCreate(CommonBase):

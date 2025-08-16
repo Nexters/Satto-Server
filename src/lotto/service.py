@@ -139,14 +139,19 @@ class LottoService:
         recommendation = (
             await self.lotto_repository.get_lotto_recommendation_by_user_id(user_id)
         )
+
         if recommendation:
             content = LottoRecommendationContent.model_validate(recommendation.content)
             return LottoRecommendation(
-                id=recommendation.id,
                 user_id=recommendation.user_id,
                 round=recommendation.round,
                 content=content,
-                created_at=recommendation.created_at,
-                updated_at=recommendation.updated_at
             )
-        return None
+        else:
+            latest_round = await self.lotto_repository.get_latest_round()
+            next_round = (latest_round or 0) + 1
+            return LottoRecommendation(
+                user_id=user_id,
+                round=next_round,
+                content=None,
+            )
