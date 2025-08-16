@@ -109,7 +109,6 @@ async def get_lotto_recommendation(
     - num5, num6: 최근 자주 나온 번호 (1-45)
     - cold_nums: 기운과 상충하는 숫자 (1-3개)
     - infrequent_nums: 등장 빈도가 낮은 숫자 (1-3개)
-    - last_prize_amount: 지난 회차 1등 당첨금 (1인당 수령액)
     - strong_element: 강한 기운
     - weak_element: 상충되는 기운
     """

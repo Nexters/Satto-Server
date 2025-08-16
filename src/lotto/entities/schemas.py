@@ -69,7 +69,6 @@ class LottoRecommendationContent(BaseModel):
     )
     strong_element: FiveElements = Field(description="강한 기운", examples=["화(火)"])
     weak_element: FiveElements = Field(description="상충되는 기운", examples=["목(木)"])
-    last_prize_amount: int = Field(description="지난 회차 1등 당첨금")
 
 
 class LottoRecommendation(CommonBase):

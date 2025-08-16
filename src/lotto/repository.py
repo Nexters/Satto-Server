@@ -103,12 +103,4 @@ class LottoRepository:
         result = await self.session.execute(query)
         return [row[0] for row in result.fetchall()]
 
-    async def get_latest_prize_amount(self) -> Optional[int]:
-        """가장 최신 회차의 1등 당첨금을 조회합니다."""
-        query = (
-            select(LottoDraws.first_prize_amount)
-            .order_by(desc(LottoDraws.round))
-            .limit(1)
-        )
-        result = await self.session.execute(query)
-        return result.scalar_one_or_none()
+
