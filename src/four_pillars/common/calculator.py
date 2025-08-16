@@ -348,26 +348,18 @@ class FourPillarsCalculator:
         heavenly_stem = pillar[0]  # 천간
         earthly_branch = pillar[1]  # 지지
 
-        # 천간의 십신과 오행
+        # 천간의 십신
         heavenly_stem_ten_god = self._get_ten_god(day_stem, heavenly_stem)
-        heavenly_stem_element = self.jikkan_five_elements.get(
-            heavenly_stem, FiveElements.EARTH
-        )
 
         # 지지의 십신 (지지의 숨겨진 천간을 기준으로 계산)
         hidden_stem = self._get_hidden_stem(earthly_branch)
         earthly_branch_ten_god = self._get_ten_god(day_stem, hidden_stem)
-        earthly_branch_element = self.jyunishi_five_elements.get(
-            earthly_branch, FiveElements.EARTH
-        )
 
         return PillarInfo(
             stem=heavenly_stem,
             branch=earthly_branch,
             stem_ten_god=heavenly_stem_ten_god,
             branch_ten_god=earthly_branch_ten_god,
-            stem_element=heavenly_stem_element,
-            branch_element=earthly_branch_element,
         )
 
     def _get_hidden_stem(self, earthly_branch: str) -> str:
@@ -388,6 +380,24 @@ class FourPillarsCalculator:
             "亥": "壬",  # 해수에 숨겨진 천간: 임수
         }
         return hidden_stems.get(earthly_branch, "甲")
+
+    def _normalize_element(self, element: str) -> FiveElements:
+        """오행 문자열을 FiveElements enum으로 정규화"""
+        # 기존 형식: "화(火)", "목(木)" 등을 처리
+        element_mapping = {
+            "화(火)": FiveElements.FIRE,
+            "목(木)": FiveElements.WOOD,
+            "토(土)": FiveElements.EARTH,
+            "금(金)": FiveElements.METAL,
+            "수(水)": FiveElements.WATER,
+        }
+        
+        normalized = element_mapping.get(element)
+        if normalized is None:
+            # 기본값으로 EARTH 반환
+            return FiveElements.EARTH
+        
+        return normalized
 
     def calculate_four_pillars(self, birth_date: datetime) -> FourPillar:
         """사주 계산 메인 함수"""

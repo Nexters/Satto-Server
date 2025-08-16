@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from src.config.schemas import CommonBase
 from src.four_pillars.entities.enums import FiveElements
@@ -70,14 +70,32 @@ class LottoRecommendationContent(BaseModel):
     strong_element: FiveElements = Field(description="강한 기운", examples=["화(火)"])
     weak_element: FiveElements = Field(description="상충되는 기운", examples=["목(木)"])
 
+    @field_validator("strong_element", "weak_element", mode="before")
+    @classmethod
+    def normalize_element(cls, v):
+        """오행 문자열을 FiveElements enum으로 정규화"""
+        if isinstance(v, str):
+            # 기존 형식: "화(火)", "목(木)" 등을 처리
+            element_mapping = {
+                "화(火)": FiveElements.FIRE,
+                "목(木)": FiveElements.WOOD,
+                "토(土)": FiveElements.EARTH,
+                "금(金)": FiveElements.METAL,
+                "수(水)": FiveElements.WATER,
+            }
+            
+            normalized = element_mapping.get(v)
+            if normalized is not None:
+                return normalized
+        
+        return v
+
 
 class LottoRecommendation(CommonBase):
     id: int
     user_id: str
     round: int
     content: LottoRecommendationContent
-    created_at: datetime
-    updated_at: datetime
 
 
 class LottoRecommendationCreate(CommonBase):

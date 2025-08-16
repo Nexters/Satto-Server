@@ -4,11 +4,11 @@ from enum import Enum
 class FiveElements(str, Enum):
     """오행 (五行)"""
 
-    WOOD = "목(木)"
-    FIRE = "화(火)"
-    EARTH = "토(土)"
-    METAL = "금(金)"
-    WATER = "수(水)"
+    WOOD = "木"
+    FIRE = "火"
+    EARTH = "土"
+    METAL = "金"
+    WATER = "水"
 
 
 class TenGods(str, Enum):

@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing_extensions import TypedDict
 
 from src.config.schemas import CommonBase
@@ -12,8 +12,6 @@ class PillarInfo(BaseModel):
     branch: str  # 지지 (두 번째 글자)
     stem_ten_god: TenGods  # 천간의 십신
     branch_ten_god: TenGods  # 지지의 십신
-    stem_element: FiveElements  # 천간의 오행
-    branch_element: FiveElements  # 지지의 오행
 
 
 class FourPillar(TypedDict, total=False):
@@ -34,3 +32,23 @@ class FourPillarDetail(CommonBase):
     month_pillar_detail: Optional[PillarInfo]  # 월주 상세
     day_pillar_detail: Optional[PillarInfo]  # 일주 상세
     time_pillar_detail: Optional[PillarInfo]  # 시주 상세
+
+    @field_validator("strong_element", "weak_element", mode="before")
+    @classmethod
+    def normalize_element(cls, v):
+        """오행 문자열을 FiveElements enum으로 정규화"""
+        if isinstance(v, str):
+            # 기존 형식: "화(火)", "목(木)" 등을 처리
+            element_mapping = {
+                "화(火)": FiveElements.FIRE,
+                "목(木)": FiveElements.WOOD,
+                "토(土)": FiveElements.EARTH,
+                "금(金)": FiveElements.METAL,
+                "수(水)": FiveElements.WATER,
+            }
+
+            normalized = element_mapping.get(v)
+            if normalized is not None:
+                return normalized
+
+        return v
