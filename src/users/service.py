@@ -1,13 +1,9 @@
-import traceback
 from datetime import datetime, time
 
 from fastapi import Depends, HTTPException
 
 from src.four_pillars.common.calculator import FourPillarsCalculator
 from src.four_pillars.entities.schemas import FourPillarDetail
-from src.hcx_client.client import HCXClient
-from src.hcx_client.common.utils import HCXUtils
-from src.hcx_client.common.parser import Parser
 from src.users.common.utils import TimeUtils
 from src.users.entities.schemas import UserCreate, UserDetail, UserList, UserUpdate
 from src.users.repository import UserRepository
