@@ -38,9 +38,8 @@ async def create_user(user_create: UserCreate, user_service: UserService = Depen
     """새로운 사용자를 생성합니다.
     - id: device 고유 식별자
     - name: 사용자 이름
-    - birth_date: 사용자 생년월일시 (YYYY-MM-DD HH:MM:SS 형식)
-      - 생시를 모르는 경우 입력하지 않음 (YYYY-MM-DD 형식)
-      - 선택한 시간 범위에서 가장 빠른 시간으로 입력 (ex. 23:00:00 ~ 00:59:59의 경우 23:00:00로 입력)
+    - birth_date: 사용자 생년월일 (YYYY-MM-DD 형식)
+    - birth_time: 사용자 생시 (선택 사항. 시간 범위 리스트로 입력)
     - gender: 사용자 성별 (M/F)
     """
     return await user_service.create_user(user_create)
