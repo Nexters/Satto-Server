@@ -4,15 +4,16 @@ from typing import Optional, List
 from fastapi import Depends, HTTPException, status
 from fastapi.concurrency import run_in_threadpool
 
-from src.fortune.entities.enums import FortuneType
+from src.fortune.entities.enums import FortuneType, FortuneDetailType
 from src.fortune.entities.schemas import (
     DailyFortuneResource,
     DailyFortuneResourceCreate,
     DailyFortuneResourceUpdate,
     DailyFortuneResourceList,
     UserDailyFortuneDetail,
+    FortuneDetailItem,
 )
-from src.fortune.entities.schemas import UserDailyFortuneSummary
+from src.fortune.entities.schemas import UserDailyFortuneSummaries
 from src.fortune.repository import FortuneRepository
 from src.fortune.entities.constants import DAILY_FORTUNE_FALLBACK_DATA
 from src.hcx_client.client import HCXClient
@@ -117,16 +118,41 @@ class FortuneService:
 
     async def get_user_daily_fortune_summaries(
         self, user_id: str, fortune_date: date
-    ) -> List[UserDailyFortuneSummary]:
+    ) -> UserDailyFortuneSummaries:
+        # 1) 먼저 조회
         summaries = await self.repository.get_user_daily_fortune_summaries(
             user_id, fortune_date
         )
+
         if not summaries:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="오늘의 운세 데이터를 찾을 수 없습니다.",
+            # 2) 타입별 최신 리소스(오늘 포함 과거) 가져와서 요약 4건 생성
+            resources = await self.repository.get_user_daily_fortune_resources(
+                ref_date=fortune_date
             )
-        return summaries  # Return the list directly
+            if not resources:
+                # 생성할 리소스 자체가 없으면 이때만 404
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="오늘 기준으로 생성 가능한 운세 리소스가 없습니다.",
+                )
+
+            resource_ids = [r.id for r in resources]
+            await self.repository.bulk_upsert_user_daily_fortune_summaries(
+                user_id=user_id,
+                fortune_date=fortune_date,
+                resource_ids=resource_ids,
+            )
+
+            # 3) 다시 조회해서 반환 데이터 구성
+            summaries = await self.repository.get_user_daily_fortune_summaries(
+                user_id, fortune_date
+            )
+
+        # 4) 래핑해서 리턴 (스키마에 맞게)
+        return UserDailyFortuneSummaries(
+            title="잘 되면 꼭 기억해 주시오",
+            content=summaries,
+        )
 
     async def get_user_daily_fortune_detail(
         self, user_id: str, fortune_date: date
@@ -142,6 +168,8 @@ class FortuneService:
 
         # 2. 기존 정보가 없으면 HCX API 호출하여 생성
         return await self._create_daily_fortune_detail(user_id, fortune_date)
+
+
 
     async def _create_daily_fortune_detail(
         self, user_id: str, fortune_date: date
@@ -197,19 +225,32 @@ class FortuneService:
             fortune_data = DAILY_FORTUNE_FALLBACK_DATA
 
         # 4. fortune_details 구성
-        fortune_details = {
-            "재물운": fortune_data.get("money_fortune", ""),
-            "취업운": fortune_data.get("job_fortune", ""),
-            "연애운": fortune_data.get("love_fortune", ""),
-        }
+        fortune_details = [
+            FortuneDetailItem(
+                type=FortuneDetailType.MONEY,
+                title="재물운",
+                content=fortune_data.get("money_fortune", "")
+            ),
+            FortuneDetailItem(
+                type=FortuneDetailType.JOB,
+                title="취업운", 
+                content=fortune_data.get("job_fortune", "")
+            ),
+            FortuneDetailItem(
+                type=FortuneDetailType.LOVE,
+                title="연애운",
+                content=fortune_data.get("love_fortune", "")
+            )
+        ]
 
-        # 5. DB에 저장
+        # 5. DB에 저장 (FortuneDetailItem을 dict로 변환)
+        fortune_details_dict = [detail.model_dump() for detail in fortune_details]
         model = await self.repository.create_user_daily_fortune_detail(
             user_id=user_id,
             fortune_date=fortune_date,
             fortune_score=fortune_data.get("score", 0),
             fortune_comment=fortune_data.get("comment", ""),
-            fortune_details=fortune_details,
+            fortune_details=fortune_details_dict,
         )
 
         return UserDailyFortuneDetail.model_validate(model)

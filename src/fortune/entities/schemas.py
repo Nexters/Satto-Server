@@ -3,7 +3,7 @@ from fastapi import Form
 from datetime import date
 from typing import List, Optional, Dict
 from src.config.schemas import CommonBase
-from src.fortune.entities.enums import FortuneType
+from src.fortune.entities.enums import FortuneType, FortuneDetailType
 
 class DailyFortuneResource(CommonBase):
     id: int
@@ -52,10 +52,22 @@ class UserDailyFortuneSummary(CommonBase):
     image_url: str
     description: str
 
+class UserDailyFortuneSummaries(CommonBase):
+    title: str
+    content: List[UserDailyFortuneSummary]
+
+
+class FortuneDetailItem(CommonBase):
+    """운세 상세 항목"""
+    type: FortuneDetailType
+    title: str
+    content: str
+
+
 class UserDailyFortuneDetail(CommonBase):
     id: int
     user_id: str
     fortune_date: date
     fortune_score: int
     fortune_comment: str
-    fortune_details: Dict[str, str]
+    fortune_details: List[FortuneDetailItem]

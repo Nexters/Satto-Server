@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional, Tuple
 
 from fastapi import Depends
@@ -71,15 +72,20 @@ class LottoRepository:
         return recommendation
 
     async def get_lotto_recommendation_by_user_id(
-        self, user_id: str
+        self, user_id: str, start_time: datetime = None, end_time: datetime = None
     ) -> Optional[LottoRecommendations]:
         """사용자의 최신 로또 추천을 조회합니다."""
-        query = (
-            select(LottoRecommendations)
-            .where(LottoRecommendations.user_id == user_id)
-            .order_by(desc(LottoRecommendations.created_at))
-            .limit(1)
+        query = select(LottoRecommendations).where(
+            LottoRecommendations.user_id == user_id
         )
+
+        if start_time and end_time:
+            query = query.where(
+                LottoRecommendations.created_at >= start_time,
+                LottoRecommendations.created_at < end_time,
+            )
+
+        query = query.order_by(desc(LottoRecommendations.created_at)).limit(1)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
@@ -102,13 +108,3 @@ class LottoRepository:
         )
         result = await self.session.execute(query)
         return [row[0] for row in result.fetchall()]
-
-    async def get_latest_prize_amount(self) -> Optional[int]:
-        """가장 최신 회차의 1등 당첨금을 조회합니다."""
-        query = (
-            select(LottoDraws.first_prize_amount)
-            .order_by(desc(LottoDraws.round))
-            .limit(1)
-        )
-        result = await self.session.execute(query)
-        return result.scalar_one_or_none()
