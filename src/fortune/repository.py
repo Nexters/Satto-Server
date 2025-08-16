@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Iterable
 
 from fastapi import Depends
 from sqlalchemy import select, desc, and_
@@ -173,3 +173,77 @@ class FortuneRepository:
         await self.session.flush()
         await self.session.refresh(model)
         return model
+
+
+    async def get_user_daily_fortune_resources(
+            self,
+            ref_date: Optional[date] = None,
+    ) -> List[DailyFortuneResourceModel]:
+        if ref_date is None:
+            ref_date = date.today()
+        dfr = DailyFortuneResourceModel
+
+        types_in_order = [
+            FortuneType.GUIIN_INITIAL,
+            FortuneType.LUCKY_OBJECT,
+            FortuneType.PERFECT_TIMING,
+            FortuneType.TABOO_OF_DAY,
+        ]
+
+        items: List[DailyFortuneResourceModel] = []
+        for t in types_in_order:
+            stmt = (
+                select(dfr)
+                .where(
+                    dfr.fortune_type == t,
+                    dfr.publish_date <= ref_date,
+                )
+                .order_by(dfr.publish_date.desc(), dfr.id.desc())
+                .limit(1)
+            )
+            res = await self.session.execute(stmt)
+            row = res.scalar_one_or_none()
+            if row:
+                items.append(row)
+
+        return items
+
+    async def bulk_upsert_user_daily_fortune_summaries(
+            self,
+            user_id: str,
+            fortune_date: date,
+            resource_ids: Iterable[int],
+    ) -> None:
+        """해당 user_id/fortune_date에 대해 주어진 resource_ids를 중복 없이 삽입."""
+        if not resource_ids:
+            return
+
+        Summary = UserDailyFortuneSummaryModel
+
+        # 이미 존재하는 것 조회
+        exists_q = (
+            select(Summary.daily_fortune_resource_id)
+            .where(
+                Summary.user_id == user_id,
+                Summary.fortune_date == fortune_date,
+                Summary.daily_fortune_resource_id.in_(list(resource_ids)),
+            )
+        )
+        res = await self.session.execute(exists_q)
+        existing_ids = set(res.scalars().all())
+
+        to_create = [rid for rid in resource_ids if rid not in existing_ids]
+        if not to_create:
+            return
+
+        # 새로 추가
+        for rid in to_create:
+            self.session.add(
+                Summary(
+                    user_id=user_id,
+                    fortune_date=fortune_date,
+                    daily_fortune_resource_id=rid,
+                )
+            )
+
+        await self.session.flush()

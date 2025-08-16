@@ -6,7 +6,7 @@ from src.four_pillars.entities.schemas import FourPillarDetail
 from src.lotto.entities.schemas import LottoRecommendation
 from src.lotto.service import LottoService
 from src.users.entities.schemas import UserCreate, UserDetail, UserList, UserUpdate
-from src.fortune.entities.schemas import UserDailyFortuneSummary, UserDailyFortuneDetail
+from src.fortune.entities.schemas import UserDailyFortuneSummaries, UserDailyFortuneDetail
 from src.users.service import UserService
 from src.fortune.service import FortuneService
 from typing import List
@@ -116,7 +116,7 @@ async def get_lotto_recommendation(
 
 
 @user_router.get(
-    "/{user_id}/daily-fortunes", response_model=List[UserDailyFortuneSummary]
+    "/{user_id}/daily-fortunes", response_model=UserDailyFortuneSummaries
 )
 async def get_user_daily_fortunes(
     user_id: str,
