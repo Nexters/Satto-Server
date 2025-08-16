@@ -39,6 +39,10 @@ class UserDailyFortuneSummary(CommonBase):
     image_url: str
     description: str
 
+class UserDailyFortuneSummaries(CommonBase):
+    title: str
+    content: List[UserDailyFortuneSummary]
+
 
 class FortuneDetailItem(CommonBase):
     """운세 상세 항목"""

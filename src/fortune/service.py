@@ -12,7 +12,7 @@ from src.fortune.entities.schemas import (
     UserDailyFortuneDetail,
     FortuneDetailItem,
 )
-from src.fortune.entities.schemas import UserDailyFortuneSummary
+from src.fortune.entities.schemas import UserDailyFortuneSummaries
 from src.fortune.repository import FortuneRepository
 from src.fortune.entities.constants import DAILY_FORTUNE_FALLBACK_DATA
 from src.hcx_client.client import HCXClient
@@ -87,7 +87,7 @@ class FortuneService:
 
     async def get_user_daily_fortune_summaries(
         self, user_id: str, fortune_date: date
-    ) -> List[UserDailyFortuneSummary]:
+    ) -> UserDailyFortuneSummaries:
         summaries = await self.repository.get_user_daily_fortune_summaries(
             user_id, fortune_date
         )
@@ -96,7 +96,7 @@ class FortuneService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="오늘의 운세 데이터를 찾을 수 없습니다.",
             )
-        return summaries  # Return the list directly
+        return UserDailyFortuneSummaries(title="잘 되면 꼭 기억해 주시오", content=summaries)  # Return the list directly
 
     async def get_user_daily_fortune_detail(
         self, user_id: str, fortune_date: date
