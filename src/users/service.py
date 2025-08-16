@@ -1,9 +1,13 @@
+import traceback
 from datetime import datetime, time
 
 from fastapi import Depends, HTTPException
 
 from src.four_pillars.common.calculator import FourPillarsCalculator
 from src.four_pillars.entities.schemas import FourPillarDetail
+from src.hcx_client.client import HCXClient
+from src.hcx_client.common.utils import HCXUtils
+from src.hcx_client.common.parser import Parser
 from src.users.common.utils import TimeUtils
 from src.users.entities.schemas import UserCreate, UserDetail, UserList, UserUpdate
 from src.users.repository import UserRepository
@@ -43,7 +47,7 @@ class UserService:
             else datetime.combine(user_create.birth_date, time(0, 0))
         )
 
-        four_pillar = self.four_pillar_calculator.calculate_four_pillars_detailed(
+        four_pillar = await self.four_pillar_calculator.calculate_four_pillars_detailed(
             birth_datetime
         )
 
@@ -80,8 +84,10 @@ class UserService:
                 birth_datetime = datetime.combine(user_update.birth_date, time(0, 0))
 
         if birth_datetime:
-            four_pillar = self.four_pillar_calculator.calculate_four_pillars_detailed(
-                birth_datetime
+            four_pillar = (
+                await self.four_pillar_calculator.calculate_four_pillars_detailed(
+                    birth_datetime
+                )
             )
 
         updated_user = await self.repository.update_user(

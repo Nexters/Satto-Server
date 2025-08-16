@@ -1,3 +1,5 @@
+import asyncio
+import traceback
 from datetime import datetime, date
 from pathlib import Path
 from typing import List, Tuple, Dict
@@ -5,6 +7,9 @@ from collections import Counter
 
 from src.four_pillars.entities.schemas import FourPillar, FourPillarDetail, PillarInfo
 from src.four_pillars.entities.enums import FiveElements, TenGods
+from src.hcx_client.client import HCXClient
+from src.hcx_client.common.utils import HCXUtils
+from src.hcx_client.common.parser import Parser
 
 
 class FourPillarsCalculator:
@@ -18,7 +23,6 @@ class FourPillarsCalculator:
         self._init_setsuiri_data()
         self._init_five_elements_mapping()
         self._init_ten_gods_mapping()
-
 
     def _init_five_elements_mapping(self):
         """천간과 지지의 오행 매핑 초기화"""
@@ -413,7 +417,9 @@ class FourPillarsCalculator:
 
         return result
 
-    def calculate_four_pillars_detailed(self, birth_date: datetime) -> FourPillarDetail:
+    async def calculate_four_pillars_detailed(
+        self, birth_date: datetime
+    ) -> FourPillarDetail:
         """십신 정보를 포함한 상세한 사주 계산"""
         # 기본 사주 계산
         basic_result = self.calculate_four_pillars(birth_date)
@@ -451,15 +457,75 @@ class FourPillarsCalculator:
         strong_element = strong_elements[0] if strong_elements else FiveElements.EARTH
         weak_element = weak_elements[0] if weak_elements else FiveElements.WOOD
 
-        # 종합 설명 생성
-        description = "근심과 즐거움이 상반하니 세월의 흐름을 잘 읽어보시게"
-
-        return FourPillarDetail(
+        # FourPillarDetail 객체 생성 (임시 description으로)
+        four_pillar_detail = FourPillarDetail(
             strong_element=strong_element,
             weak_element=weak_element,
-            description=description,
+            description="",  # 임시값
             year_pillar_detail=year_pillar_detail,
             month_pillar_detail=month_pillar_detail,
             day_pillar_detail=day_pillar_detail,
             time_pillar_detail=time_pillar_detail,
         )
+
+        # HCX API 호출하여 사주 설명 생성
+        description = await self._generate_four_pillar_description(
+            four_pillar_detail, strong_element
+        )
+
+        # description 업데이트
+        four_pillar_detail.description = description
+
+        return four_pillar_detail
+
+    async def _generate_four_pillar_description(
+        self, four_pillar_detail: FourPillarDetail, strong_element: FiveElements
+    ) -> str:
+        """HCX API를 호출하여 사주 설명을 생성합니다."""
+        try:
+            hcx_client = HCXClient()
+
+            # FourPillarDetail에서 사주 정보 추출
+            year_pillar = ""
+            month_pillar = ""
+            day_pillar = ""
+            time_pillar = ""
+
+            if four_pillar_detail.year_pillar_detail:
+                year_pillar = f"{four_pillar_detail.year_pillar_detail.stem}{four_pillar_detail.year_pillar_detail.branch}"
+
+            if four_pillar_detail.month_pillar_detail:
+                month_pillar = f"{four_pillar_detail.month_pillar_detail.stem}{four_pillar_detail.month_pillar_detail.branch}"
+
+            if four_pillar_detail.day_pillar_detail:
+                day_pillar = f"{four_pillar_detail.day_pillar_detail.stem}{four_pillar_detail.day_pillar_detail.branch}"
+
+            if four_pillar_detail.time_pillar_detail:
+                time_pillar = f"{four_pillar_detail.time_pillar_detail.stem}{four_pillar_detail.time_pillar_detail.branch}"
+
+            # 사주 정보 준비
+            four_pillar_data = {
+                "year_pillar": year_pillar,
+                "month_pillar": month_pillar,
+                "day_pillar": day_pillar,
+                "time_pillar": time_pillar,
+                "strong_element": strong_element.value,
+            }
+
+            # HCXUtils를 사용하여 프롬프트 가져오기
+            system_prompt, user_prompt_template = HCXUtils.get_prompt_pair(
+                "fortune.yaml", "four_pillar"
+            )
+
+            user_prompt = user_prompt_template.format(**four_pillar_data)
+
+            # HCX API 호출
+            response = await hcx_client.call_completion(
+                system_prompt=system_prompt, user_prompt=user_prompt
+            )
+
+            return response.strip()
+
+        except Exception as e:
+            # API 호출 실패 시 기본 설명 반환
+            return "근심과 즐거움이 상반하니 세월의 흐름을 잘 읽어보시게"
