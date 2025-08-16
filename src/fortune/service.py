@@ -2,6 +2,7 @@ from datetime import date
 from typing import Optional, List
 
 from fastapi import Depends, HTTPException, status
+from fastapi.concurrency import run_in_threadpool
 
 from src.fortune.entities.enums import FortuneType
 from src.fortune.entities.schemas import (
@@ -19,16 +20,20 @@ from src.hcx_client.common.parser import Parser
 from src.hcx_client.common.utils import HCXUtils
 from src.users.repository import UserRepository
 from src.common.logger import logger
+from src.storage_client.client import ObjectStorageClient, ALLOWED_CONTENT_TYPES
 
 
 class FortuneService:
     def __init__(
         self,
+        storage: ObjectStorageClient = Depends(ObjectStorageClient),
         fortune_repository: FortuneRepository = Depends(),
         user_repository: UserRepository = Depends(),
     ):
         self.repository = fortune_repository
         self.user_repository = user_repository
+        self.storage = storage
+
 
     async def list_fortunes(
         self,
@@ -60,6 +65,32 @@ class FortuneService:
         )
 
         # DB 모델을 DTO로 변환하여 반환
+        return DailyFortuneResource.model_validate(model)
+
+    async def create_fortune_with_image(
+        self, dto: DailyFortuneResourceCreate, *, upload_file  # UploadFile | None
+    ) -> DailyFortuneResource:
+        image_url = ""
+
+        # 이미지가 올라오면 Object Storage에 먼저 업로드
+        if upload_file:
+            if upload_file.content_type not in ALLOWED_CONTENT_TYPES:
+                raise HTTPException(status_code=400, detail="허용되지 않는 이미지 형식입니다.")
+            key = self.storage.make_key(prefix=f"fortunes/{dto.publish_date}", filename=upload_file.filename)
+            # boto3는 sync → threadpool
+            image_url = await run_in_threadpool(
+                self.storage.upload_fileobj,
+                upload_file.file,
+                key=key,
+                content_type=upload_file.content_type,
+            )
+
+        model = await self.repository.create_fortune(
+            publish_date=dto.publish_date,
+            fortune_type=dto.fortune_type,
+            image_url=image_url,
+            description=dto.description,
+        )
         return DailyFortuneResource.model_validate(model)
 
     async def update_fortune(

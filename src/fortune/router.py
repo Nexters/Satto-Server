@@ -1,7 +1,7 @@
 # src/fortune/router.py
 from datetime import date
 from typing import Optional
-from fastapi import APIRouter, Depends, Query, Path, HTTPException, status
+from fastapi import APIRouter, Depends, Query, Path, File, UploadFile, HTTPException, status
 from src.fortune.entities.schemas import (
     DailyFortuneResource,
     DailyFortuneResourceCreate,
@@ -35,10 +35,12 @@ async def list_fortune_resources(
     summary="운세 리소스 등록 (관리자)",
 )
 async def create_fortune_resource(
-    body: DailyFortuneResourceCreate,
+    image: UploadFile = File(None, description="이미지 파일"),
+    body: DailyFortuneResourceCreate = Depends(DailyFortuneResourceCreate.as_form),
     service: FortuneService = Depends(),
 ):
-    return await service.create_fortune(body)
+    # return await service.create_fortune(body)
+    return await service.create_fortune_with_image(body, upload_file=image)
 
 
 @fortune_router.patch(

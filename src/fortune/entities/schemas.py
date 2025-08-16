@@ -1,9 +1,9 @@
 # src/fortune/entities/schemas.py
+from fastapi import Form
 from datetime import date
 from typing import List, Optional, Dict
 from src.config.schemas import CommonBase
 from src.fortune.entities.enums import FortuneType
-
 
 class DailyFortuneResource(CommonBase):
     id: int
@@ -21,8 +21,21 @@ class DailyFortuneResourceList(CommonBase):
 class DailyFortuneResourceCreate(CommonBase):
     publish_date: date
     fortune_type: FortuneType
-    image_url: str
+    # image_url: str
     description: str
+
+    @classmethod
+    def as_form(
+            cls,
+            publish_date: date = Form(..., description="게시일 (YYYY-MM-DD)"),
+            fortune_type: FortuneType = Form(..., description="운세 타입"),
+            description: str = Form(None, description="설명"),
+    ):
+        return cls(
+            publish_date=publish_date,
+            fortune_type=fortune_type,
+            description=description,
+        )
 
 
 class DailyFortuneResourceUpdate(CommonBase):

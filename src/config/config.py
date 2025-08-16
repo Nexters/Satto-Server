@@ -13,12 +13,19 @@ class DBConfig(BaseSettings):
     MYSQL_PASSWORD: str = Field(...)
     MYSQL_DB: str = Field(...)
 
-
 class HcxConfig(BaseSettings):
     HCX_KEY: str = Field(...)
     HCX_URL: str = Field(...)
 
+class StorageConfig(BaseSettings):
+    NCP_ACCESS_KEY: str = Field(...)
+    NCP_SECRET_KEY: str = Field(...)
+    NCP_OS_BUCKET: str = Field(...)
+    NCP_OS_REGION: str = Field(default="kr-standard")
+    NCP_OS_ENDPOINT: str = Field(default="https://kr.object.ncloudstorage.com")
+    # NCP_OS_PUBLIC_READ: bool = Field(default=True)
 
 app_config = AppConfig()
 db_config = DBConfig()
 hcx_config = HcxConfig()
+storage_config = StorageConfig()
