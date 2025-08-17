@@ -15,16 +15,42 @@ class LottoRepository:
         self.session = session
 
     async def get_lotto_draws(
-        self, cursor: Optional[int] = None, limit: int = 10
+        self,
+        user_id: Optional[str] = None,
+        cursor: Optional[int] = None,
+        limit: int = 10,
     ) -> Tuple[List[LottoDraws], Optional[int]]:
-        query = select(LottoDraws).order_by(desc(LottoDraws.round))
+        if user_id:
+            query = (
+                select(
+                    LottoDraws,
+                    (LottoRecommendations.id.is_not(None)).label("has_recommendation"),
+                )
+                .outerjoin(
+                    LottoRecommendations,
+                    (LottoDraws.round == LottoRecommendations.round)
+                    & (LottoRecommendations.user_id == user_id),
+                )
+                .order_by(desc(LottoDraws.round))
+            )
+        else:
+            query = select(LottoDraws).order_by(desc(LottoDraws.round))
+
         if cursor:
             query = query.where(LottoDraws.round < cursor)
 
         query = query.limit(limit)
 
         result = await self.session.execute(query)
-        draws = result.scalars().all()
+
+        if user_id:
+            rows = result.fetchall()
+            draws = []
+            for draw, has_recommendation in rows:
+                draw.has_recommendation = bool(has_recommendation)
+                draws.append(draw)
+        else:
+            draws = result.scalars().all()
 
         next_cursor = draws[-1].round if len(draws) == limit else None
         return draws, next_cursor
@@ -56,6 +82,66 @@ class LottoRepository:
         result = await self.session.execute(query)
         latest = result.scalar_one_or_none()
         return latest
+
+    async def create_lotto_draw(self, lotto_data: dict) -> LottoDraws:
+        """로또 추첨 데이터를 생성합니다."""
+        lotto_draw = LottoDraws(**lotto_data)
+        self.session.add(lotto_draw)
+        await self.session.flush()
+        await self.session.refresh(lotto_draw)
+        return lotto_draw
+
+    async def get_lotto_draw_by_round(self, round: int) -> Optional[LottoDraws]:
+        """특정 회차의 로또 추첨 데이터를 조회합니다."""
+        query = select(LottoDraws).where(LottoDraws.round == round)
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def update_lotto_statistics(self, lotto_data: dict) -> None:
+        """로또 통계 데이터를 업데이트합니다."""
+        # 메인 번호들 (1-6번)과 보너스 번호
+        main_numbers = [
+            lotto_data["num1"],
+            lotto_data["num2"],
+            lotto_data["num3"],
+            lotto_data["num4"],
+            lotto_data["num5"],
+            lotto_data["num6"],
+        ]
+        bonus_number = lotto_data["bonus_num"]
+
+        # 당첨된 번호들만 수집 (중복 제거)
+        winning_numbers = set(main_numbers + [bonus_number])
+
+        # 당첨된 번호들의 통계만 조회
+        stats_query = select(LottoStatistics).where(
+            LottoStatistics.num.in_(winning_numbers)
+        )
+        result = await self.session.execute(stats_query)
+        existing_stats = {stat.num: stat for stat in result.scalars().all()}
+
+        # 각 당첨 번호에 대해 통계 업데이트
+        for num in winning_numbers:
+            if num in existing_stats:
+                stat = existing_stats[num]
+            else:
+                # 새로운 통계 생성
+                stat = LottoStatistics(
+                    num=num, main_count=0, bonus_count=0, total_count=0
+                )
+                self.session.add(stat)
+
+            # 카운트 업데이트
+            if num in main_numbers:
+                stat.main_count += 1
+                stat.total_count += 1
+            elif num == bonus_number:
+                stat.bonus_count += 1
+                stat.total_count += 1
+
+            # 마지막 출현 정보 업데이트
+            stat.last_round = lotto_data["round"]
+            stat.last_date = lotto_data["draw_date"]
 
     async def create_lotto_recommendation(
         self, user_id: str, round: int, content: dict

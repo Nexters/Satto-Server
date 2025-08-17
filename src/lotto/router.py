@@ -11,6 +11,9 @@ lotto_router = APIRouter(prefix="/lotto", tags=["lotto"])
 
 @lotto_router.get("/draws", response_model=LottoDrawList)
 async def get_lotto_draws(
+    user_id: Optional[str] = Query(
+        None, description="사용자 ID (회차별 사용자의 추천 번호 생성 여부 조회용)"
+    ),
     cursor: Optional[int] = Query(
         None, description="다음 페이지 조회를 위한 cursor 값"
     ),
@@ -18,7 +21,7 @@ async def get_lotto_draws(
     lotto_service: LottoService = Depends(),
 ):
     """로또 회차별 리스트를 조회합니다."""
-    return await lotto_service.get_lotto_draws(cursor=cursor, limit=limit)
+    return await lotto_service.get_lotto_draws(user_id=user_id, cursor=cursor, limit=limit)
 
 
 @lotto_router.get("/statistics", response_model=List[LottoStatistic])

@@ -1,15 +1,12 @@
-import asyncio
-import traceback
+from collections import Counter
 from datetime import datetime, date
 from pathlib import Path
-from typing import List, Tuple, Dict
-from collections import Counter
+from typing import List, Tuple
 
-from src.four_pillars.entities.schemas import FourPillar, FourPillarDetail, PillarInfo
 from src.four_pillars.entities.enums import FiveElements, TenGods
+from src.four_pillars.entities.schemas import FourPillar, FourPillarDetail, PillarInfo
 from src.hcx_client.client import HCXClient
 from src.hcx_client.common.utils import HCXUtils
-from src.hcx_client.common.parser import Parser
 
 
 class FourPillarsCalculator:
@@ -413,16 +410,11 @@ class FourPillarsCalculator:
             minute = None
 
         pillars = self._calculate_kanshi(year, month, day, hour, minute)
-
-        # 오행 분석
-        strong_elements, weak_elements = self._analyze_five_elements(pillars)
         result: FourPillar = {
             "year_pillar": pillars[0],  # 년주
             "month_pillar": pillars[1],  # 월주
             "day_pillar": pillars[2],  # 일주
             "time_pillar": pillars[3],  # 시주
-            "strong_elements": strong_elements,
-            "weak_elements": weak_elements,
         }
 
         return result
