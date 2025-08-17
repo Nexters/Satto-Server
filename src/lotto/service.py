@@ -1,6 +1,7 @@
 import traceback
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
+from zoneinfo import ZoneInfo
 
 import httpx
 from fastapi import Depends, HTTPException
@@ -16,6 +17,7 @@ from src.lotto.entities.schemas import (
     LottoStatistic,
     LottoRecommendation,
     LottoRecommendationContent,
+    LottoResultCheckResponse,
 )
 from src.lotto.repository import LottoRepository
 from src.users.repository import UserRepository
@@ -245,27 +247,118 @@ class LottoService:
     ) -> Optional[LottoRecommendation]:
         """사용자의 최신 로또 추천을 조회합니다."""
         # 로또 추천 유효 기간 계산
-        start_time, end_time = self._get_current_lotto_period()
+        # start_time, end_time = self._get_current_lotto_period()
 
         # 유효 기간 내에서만 추천 조회
+        # recommendation = (
+        #     await self.lotto_repository.get_lotto_recommendation_by_user_id(
+        #         user_id, start_time, end_time
+        #     )
+        # )
+
         recommendation = (
             await self.lotto_repository.get_lotto_recommendation_by_user_id(
-                user_id, start_time, end_time
+                user_id
             )
         )
 
+        latest_round = await self.lotto_repository.get_latest_round()
+        next_round = (latest_round or 0) + 1
+
         if recommendation:
             content = LottoRecommendationContent.model_validate(recommendation.content)
+
+            # 추천 결과를 확인한 경우, 최신 회차 응답
+            if recommendation.is_read:
+                _round = next_round
+                is_read = True
+            # 추천 결과를 확인하지 않은 경우, 해당 회차 응답
+            else:
+                _round = recommendation.round
+                is_read = False
+
             return LottoRecommendation(
                 user_id=recommendation.user_id,
-                round=recommendation.round,
+                round=_round,
                 content=content,
+                is_read=is_read,
             )
         else:
-            latest_round = await self.lotto_repository.get_latest_round()
-            next_round = (latest_round or 0) + 1
+            # 한 번도 추천받지 않은 유저는 최신 회차 응답
             return LottoRecommendation(
                 user_id=user_id,
                 round=next_round,
                 content=None,
+                is_read=False,
             )
+
+    def _extract_rec_numbers(self, rec_content) -> List[int]:
+        """추천 번호 6개를 원본 순서로 추출"""
+        # rec_content가 Pydantic 모델이든 dict든 대응
+        getter = (lambda k: getattr(rec_content, k)) if hasattr(rec_content, "__getattribute__") and not isinstance(
+            rec_content, dict) else (lambda k: rec_content[k])
+        return [int(getter(k)) for k in ("num1", "num2", "num3", "num4", "num5", "num6")]
+
+    @staticmethod
+    def _judge_rank(matched_count: int, has_bonus: bool) -> Optional[int]:
+        if matched_count == 6: return 1
+        if matched_count == 5 and has_bonus: return 2
+        if matched_count == 5: return 3
+        if matched_count == 4: return 4
+        if matched_count == 3: return 5
+        return None
+
+    def _pick_prize_amount(self, draw, rank: Optional[int]) -> Optional[int]:
+        if rank is None: return None
+        if rank == 1:
+            return getattr(draw, "first_prize_amount", None)
+        rank_map = {2: "second_prize_amount", 3: "third_prize_amount", 4: "fourth_prize_amount",
+                    5: "fifth_prize_amount"}
+        return getattr(draw, rank_map.get(rank, ""), None)
+
+    async def check_recommendation_result(self, user_id: str, round: int) -> LottoResultCheckResponse:
+        # 1) 해당 회차 추천 레코드
+        rec = await self.lotto_repository.get_recommendation_by_user_and_round(user_id=user_id, round=round)
+        if not rec:
+            raise HTTPException(status_code=404, detail="해당 회차의 추천 기록이 없습니다.")
+        if not rec.content:
+            raise HTTPException(status_code=400, detail="추천 내용이 비어 있습니다.")
+
+        # 2) 해당 회차 당첨번호
+        draw = await self.lotto_repository.get_lotto_draw_by_round(round)
+        if not draw:
+            raise HTTPException(status_code=404, detail="해당 회차의 당첨 결과가 아직 등록되지 않았습니다.")
+
+        # 3) 번호 세트 구성 (원본 순서 유지)
+        recommended_numbers = self._extract_rec_numbers(rec.content)
+        draw_numbers = [draw.num1, draw.num2, draw.num3, draw.num4, draw.num5, draw.num6]
+        bonus_number = draw.bonus_num
+
+        # 4) 매칭/등수 판정
+        main_set = set(draw_numbers)
+        rec_set = set(recommended_numbers)
+        matched = sorted(main_set & rec_set)
+        matched_count = len(matched)
+        has_bonus = (bonus_number in rec_set) and (bonus_number not in main_set)  # 규칙상 보너스는 메인과 중복 안 됨
+        rank = self._judge_rank(matched_count, has_bonus)
+        prize_amount = self._pick_prize_amount(draw, rank)
+
+        # 5) 읽음 처리
+        if not rec.is_read:
+            kst = ZoneInfo("Asia/Seoul")
+            await self.lotto_repository.mark_recommendation_read(rec.id, read_at=datetime.now(tz=kst))
+            # 필요 시: await self.lotto_repository.session.commit()
+
+        # 6) 응답
+        return LottoResultCheckResponse(
+            user_id=user_id,
+            round=round,
+            draw_numbers=draw_numbers,
+            bonus_number=bonus_number,
+            recommended_numbers=recommended_numbers,
+            matched_count=matched_count,
+            matched_numbers=matched,
+            has_bonus=has_bonus,
+            rank=rank,
+            prize_amount=prize_amount,
+        )
