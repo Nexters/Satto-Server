@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator
@@ -19,6 +19,7 @@ class LottoDraw(CommonBase):
     bonus_num: int
     first_prize_amount: int
     total_winners: int
+    has_recommendation: bool = False
 
 
 class LottoDrawList(CommonBase):

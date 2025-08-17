@@ -134,15 +134,15 @@ class LottoService:
         # 지난 토요일 오후 9시(21시) 계산
         last_saturday_9pm = this_saturday_9pm - timedelta(days=7)
         
-        logger.info(f"로또 추천 유효 기간: {last_saturday_9pm} ~ {this_saturday_9pm}")
         return last_saturday_9pm, this_saturday_9pm
 
     async def get_lotto_draws(
-        self, cursor: Optional[int] = None, limit: int = 10
+        self, user_id: Optional[str] = None, cursor: Optional[int] = None, limit: int = 10
     ) -> LottoDrawList:
         draws, next_cursor = await self.lotto_repository.get_lotto_draws(
-            cursor=cursor, limit=limit
+            user_id=user_id, cursor=cursor, limit=limit
         )
+        
         draw_list = [LottoDraw.model_validate(draw) for draw in draws]
         return LottoDrawList(draws=draw_list, next_cursor=next_cursor)
 

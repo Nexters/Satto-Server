@@ -14,7 +14,7 @@ async def update_next_lotto_draw():
             repository = LottoRepository(session)
             lotto_service = LottoService(repository)
             success = await lotto_service.update_next_lotto_draw()
-            
+            await session.commit()
             if success:
                 logger.info("로또 데이터 업데이트가 성공적으로 완료되었습니다.")
             else:
