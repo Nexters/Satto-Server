@@ -1,7 +1,8 @@
 import traceback
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
+import httpx
 from fastapi import Depends, HTTPException
 
 from src.common.logger import logger
@@ -29,6 +30,87 @@ class LottoService:
 
         self.lotto_repository = lotto_repository
         self.user_repository = user_repository
+
+    async def fetch_lotto_data_from_api(self, drw_no: int) -> Optional[Dict[str, Any]]:
+        """동행복권 API에서 특정 회차의 로또 데이터를 가져옵니다."""
+        base_url = "https://www.dhlottery.co.kr/common.do"
+        params = {
+            "method": "getLottoNumber",
+            "drwNo": drw_no
+        }
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(base_url, params=params)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("returnValue") == "success":
+                        return data
+                    else:
+                        logger.warning(f"회차 {drw_no}: API 응답 오류 - {data}")
+                        return None
+                else:
+                    logger.warning(f"회차 {drw_no}: HTTP 오류 - {response.status_code}")
+                    return None
+        except Exception as e:
+            logger.error(f"회차 {drw_no}: 요청 오류 - {e}")
+            return None
+
+    def parse_lotto_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """API 응답 데이터를 데이터베이스 모델에 맞게 파싱합니다."""
+        return {
+            "round": data["drwNo"],
+            "draw_date": datetime.strptime(data["drwNoDate"], "%Y-%m-%d").date(),
+            "num1": data["drwtNo1"],
+            "num2": data["drwtNo2"],
+            "num3": data["drwtNo3"],
+            "num4": data["drwtNo4"],
+            "num5": data["drwtNo5"],
+            "num6": data["drwtNo6"],
+            "bonus_num": data["bnusNo"],
+            "first_prize_amount": data["firstWinamnt"],
+            "total_winners": data["firstPrzwnerCo"]
+        }
+
+    async def update_next_lotto_draw(self) -> bool:
+        """가장 최신 회차 다음 회차의 로또 데이터를 가져와서 저장합니다."""
+        try:
+            # 1. 현재 데이터베이스의 최신 회차 조회
+            latest_round = await self.lotto_repository.get_latest_round()
+            if not latest_round:
+                logger.error("데이터베이스에 로또 회차 정보가 없습니다.")
+                return False
+            
+            next_round = latest_round + 1
+            logger.info(f"다음 회차 {next_round} 데이터 조회 시작")
+            
+            # 2. 이미 존재하는지 확인
+            existing_draw = await self.lotto_repository.get_lotto_draw_by_round(next_round)
+            if existing_draw:
+                logger.info(f"회차 {next_round}: 이미 존재함")
+                return True
+            
+            # 3. API에서 데이터 가져오기
+            api_data = await self.fetch_lotto_data_from_api(next_round)
+            if not api_data:
+                logger.warning(f"회차 {next_round}: API에서 데이터를 가져올 수 없음")
+                return False
+            
+            # 4. 데이터 파싱
+            lotto_data = self.parse_lotto_data(api_data)
+            
+            # 5. 데이터베이스에 저장
+            await self.lotto_repository.create_lotto_draw(lotto_data)
+            
+            # 6. 통계 업데이트
+            await self.lotto_repository.update_lotto_statistics(lotto_data)
+            
+            logger.info(f"회차 {next_round}: 데이터 저장 완료")
+            return True
+            
+        except Exception as e:
+            logger.error(f"다음 회차 로또 데이터 업데이트 실패: {e}")
+            return False
 
     def _get_current_lotto_period(self) -> tuple[datetime, datetime]:
         """
