@@ -6,7 +6,10 @@ from src.four_pillars.entities.schemas import FourPillarDetail
 from src.lotto.entities.schemas import LottoRecommendation, LottoResultCheckResponse
 from src.lotto.service import LottoService
 from src.users.entities.schemas import UserCreate, UserDetail, UserList, UserUpdate
-from src.fortune.entities.schemas import UserDailyFortuneSummaries, UserDailyFortuneDetail
+from src.fortune.entities.schemas import (
+    UserDailyFortuneSummaries,
+    UserDailyFortuneDetail,
+)
 from src.users.service import UserService
 from src.fortune.service import FortuneService
 from typing import List
@@ -115,9 +118,7 @@ async def get_lotto_recommendation(
     return await lotto_service.get_lotto_recommendation(user_id=user_id)
 
 
-@user_router.get(
-    "/{user_id}/daily-fortunes", response_model=UserDailyFortuneSummaries
-)
+@user_router.get("/{user_id}/daily-fortunes", response_model=UserDailyFortuneSummaries)
 async def get_user_daily_fortunes(
     user_id: str,
     fortune_date: date = Query(default_factory=get_kst_date),
@@ -136,11 +137,12 @@ async def get_user_daily_fortune_details(
 ):
     """
     사용자의 특정 날짜 운세 상세 정보를 조회합니다.
-    
+
     user_id: 사용자 ID
     fortune_date: 운세 날짜 (기본값: 오늘)
     """
     return await fortune_service.get_user_daily_fortune_detail(user_id, fortune_date)
+
 
 @user_router.post(
     "/{user_id}/lotto-recommendation/{round}/check",
