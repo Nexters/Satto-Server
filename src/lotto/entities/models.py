@@ -1,6 +1,7 @@
 from sqlalchemy import (
     Column,
     Integer,
+    Boolean,
     Date,
     CheckConstraint,
     BigInteger,
@@ -55,5 +56,8 @@ class LottoRecommendations(Base):
     user_id = Column(String(255), ForeignKey("users.id"), nullable=False)
     round = Column(Integer, nullable=False)
     content = Column(JSON, nullable=False)
+    is_read = Column(Boolean, nullable=False, default=False)
+    read_at = Column(DateTime, nullable=True)
 
     user = relationship("User", back_populates="lotto_recommendations")
+

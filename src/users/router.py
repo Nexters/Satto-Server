@@ -3,10 +3,13 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query, HTTPException
 
 from src.four_pillars.entities.schemas import FourPillarDetail
-from src.lotto.entities.schemas import LottoRecommendation
+from src.lotto.entities.schemas import LottoRecommendation, LottoResultCheckResponse
 from src.lotto.service import LottoService
 from src.users.entities.schemas import UserCreate, UserDetail, UserList, UserUpdate
-from src.fortune.entities.schemas import UserDailyFortuneSummaries, UserDailyFortuneDetail
+from src.fortune.entities.schemas import (
+    UserDailyFortuneSummaries,
+    UserDailyFortuneDetail,
+)
 from src.users.service import UserService
 from src.fortune.service import FortuneService
 from typing import List
@@ -115,9 +118,7 @@ async def get_lotto_recommendation(
     return await lotto_service.get_lotto_recommendation(user_id=user_id)
 
 
-@user_router.get(
-    "/{user_id}/daily-fortunes", response_model=UserDailyFortuneSummaries
-)
+@user_router.get("/{user_id}/daily-fortunes", response_model=UserDailyFortuneSummaries)
 async def get_user_daily_fortunes(
     user_id: str,
     fortune_date: date = Query(default_factory=get_kst_date),
@@ -136,8 +137,25 @@ async def get_user_daily_fortune_details(
 ):
     """
     사용자의 특정 날짜 운세 상세 정보를 조회합니다.
-    
+
     user_id: 사용자 ID
     fortune_date: 운세 날짜 (기본값: 오늘)
     """
     return await fortune_service.get_user_daily_fortune_detail(user_id, fortune_date)
+
+
+@user_router.post(
+    "/{user_id}/lotto-recommendation/{round}/check",
+    response_model=LottoResultCheckResponse,
+)
+async def check_lotto_result(
+    user_id: str,
+    round: int,
+    lotto_service: LottoService = Depends(),
+):
+    """
+    특정 회차의 당첨 결과를 확인합니다.
+    - 추천받은 번호와 해당 회차 당첨 번호를 비교하여 등수/당첨금 반환
+    - 조회 시 해당 추천 레코드를 읽음 처리(is_read/read_at 업데이트)
+    """
+    return await lotto_service.check_recommendation_result(user_id=user_id, round=round)

@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional, Tuple
 
 from fastapi import Depends
-from sqlalchemy import select, desc, asc
+from sqlalchemy import select, update, desc, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.common.dependencies import get_db_session
@@ -194,3 +194,26 @@ class LottoRepository:
         )
         result = await self.session.execute(query)
         return [row[0] for row in result.fetchall()]
+
+    async def get_recommendation_by_user_and_round(
+            self, user_id: str, round: int
+    ) -> Optional[LottoRecommendations]:
+        query = (
+            select(LottoRecommendations)
+            .where(
+                LottoRecommendations.user_id == user_id,
+                LottoRecommendations.round == round,
+            )
+            .limit(1)
+        )
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def mark_recommendation_read(self, recommendation_id: int, read_at: datetime) -> None:
+        """추천 레코드를 읽음 처리합니다."""
+        stmt = (
+            update(LottoRecommendations)
+            .where(LottoRecommendations.id == recommendation_id)
+            .values(is_read=True, read_at=read_at)
+        )
+        await self.session.execute(stmt)

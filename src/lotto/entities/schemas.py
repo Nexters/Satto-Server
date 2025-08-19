@@ -84,11 +84,11 @@ class LottoRecommendationContent(BaseModel):
                 "금(金)": FiveElements.METAL,
                 "수(水)": FiveElements.WATER,
             }
-            
+
             normalized = element_mapping.get(v)
             if normalized is not None:
                 return normalized
-        
+
         return v
 
 
@@ -96,9 +96,26 @@ class LottoRecommendation(CommonBase):
     user_id: str
     round: int
     content: Optional[LottoRecommendationContent] = None
+    is_finished: bool = False
 
 
 class LottoRecommendationCreate(CommonBase):
     user_id: str
     round: int
     content: LottoRecommendationContent
+
+
+class LottoResultCheckResponse(CommonBase):
+    user_id: str
+    round: int
+
+    # 추가된 필드들
+    draw_numbers: List[int]  # 해당 회차 당첨 메인 번호 6개 (원본 순서)
+    bonus_number: int  # 해당 회차 보너스 번호
+    recommended_numbers: List[int]  # 추천받은 번호 6개 (원본 순서)
+
+    matched_count: int
+    matched_numbers: List[int]  # 교집합(오름차순)
+    has_bonus: bool
+    rank: Optional[int]  # 1~5, 낙첨이면 None
+    prize_amount: Optional[int]  # 원 단위, 알 수 없으면 None
