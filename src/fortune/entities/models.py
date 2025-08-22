@@ -1,5 +1,5 @@
 # src/fortune/entities/models.py
-from sqlalchemy import Column, Integer, Date, Enum as SAEnum, String, CheckConstraint, ForeignKey, JSON
+from sqlalchemy import Column, Integer, Date, Enum as SAEnum, String, CheckConstraint, ForeignKey, JSON, UniqueConstraint
 from sqlalchemy.orm import relationship
 from src.config.database import Base
 from src.fortune.entities.enums import FortuneType
@@ -41,4 +41,5 @@ class UserDailyFortuneDetail(Base):
     __table_args__ = (
         CheckConstraint("fortune_score >= 0 AND fortune_score <= 100", name="ck_fortune_score_range"),
         CheckConstraint("length(fortune_comment) > 0", name="ck_fortune_comment_len"),
+        UniqueConstraint("user_id", "fortune_date", name="uk_user_daily_fortune_detail_user_date"),
     )
