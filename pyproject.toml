@@ -6,7 +6,7 @@ authors = [
     {name = "Gukhee Jo", email = "project@example.com"}
 ]
 readme = "README.md"
-requires-python = "^3.10"
+requires-python = "^3.13"
 dependencies = [
     "fastapi (>=0.116.1,<0.117.0)",
     "sqlalchemy (>=2.0.41,<3.0.0)",
@@ -24,6 +24,8 @@ dependencies = [
     "apscheduler (>=3.11.0,<4.0.0)"
 ]
 
+[tool.poetry]
+package-mode = false
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
