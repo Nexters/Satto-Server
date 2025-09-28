@@ -204,16 +204,22 @@ class LottoRepository:
                 LottoRecommendations.user_id == user_id,
                 LottoRecommendations.round == round,
             )
+            .order_by(desc(LottoRecommendations.created_at))
             .limit(1)
         )
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def mark_recommendation_read(self, recommendation_id: int, read_at: datetime) -> None:
-        """추천 레코드를 읽음 처리합니다."""
+    async def mark_all_recommendations_read_by_user_and_round(
+            self, user_id: str, round: int, read_at: datetime
+    ) -> None:
+        """특정 사용자와 회차의 모든 추천을 읽음 처리합니다."""
         stmt = (
             update(LottoRecommendations)
-            .where(LottoRecommendations.id == recommendation_id)
+            .where(
+                LottoRecommendations.user_id == user_id,
+                LottoRecommendations.round == round,
+            )
             .values(is_read=True, read_at=read_at)
         )
         await self.session.execute(stmt)
