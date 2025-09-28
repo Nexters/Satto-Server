@@ -380,13 +380,12 @@ class LottoService:
         rank = self._judge_rank(matched_count, has_bonus)
         prize_amount = self._pick_prize_amount(draw, rank)
 
-        # 5) 읽음 처리
-        if not rec.is_read:
-            kst = ZoneInfo("Asia/Seoul")
-            await self.lotto_repository.mark_recommendation_read(
-                rec.id, read_at=datetime.now(tz=kst)
-            )
-            # 필요 시: await self.lotto_repository.session.commit()
+        # 5) 읽음 처리 - 해당 라운드의 모든 추천을 읽음 처리
+        kst = ZoneInfo("Asia/Seoul")
+        await self.lotto_repository.mark_all_recommendations_read_by_user_and_round(
+            user_id=user_id, round=round, read_at=datetime.now(tz=kst)
+        )
+        # 필요 시: await self.lotto_repository.session.commit()
 
         # 6) 응답
         return LottoResultCheckResponse(
