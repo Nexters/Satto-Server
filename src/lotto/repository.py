@@ -1,13 +1,16 @@
 from datetime import datetime
-from typing import List, Optional, Tuple
 
 from fastapi import Depends
-from sqlalchemy import select, update, desc, asc
+from sqlalchemy import asc, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.common.dependencies import get_db_session
 from src.lotto.entities.enums import SortType
-from src.lotto.entities.models import LottoDraws, LottoStatistics, LottoRecommendations
+from src.lotto.entities.models import (
+    LottoDraws,
+    LottoRecommendations,
+    LottoStatistics,
+)
 
 
 class LottoRepository:
@@ -16,15 +19,17 @@ class LottoRepository:
 
     async def get_lotto_draws(
         self,
-        user_id: Optional[str] = None,
-        cursor: Optional[int] = None,
+        user_id: str | None = None,
+        cursor: int | None = None,
         limit: int = 10,
-    ) -> Tuple[List[LottoDraws], Optional[int]]:
+    ) -> tuple[list[LottoDraws], int | None]:
         if user_id:
             query = (
                 select(
                     LottoDraws,
-                    (LottoRecommendations.id.is_not(None)).label("has_recommendation"),
+                    (LottoRecommendations.id.is_not(None)).label(
+                        "has_recommendation"
+                    ),
                 )
                 .outerjoin(
                     LottoRecommendations,
@@ -50,14 +55,16 @@ class LottoRepository:
                 draw.has_recommendation = bool(has_recommendation)
                 draws.append(draw)
         else:
-            draws = result.scalars().all()
+            draws = list(result.scalars().all())
 
         next_cursor = draws[-1].round if len(draws) == limit else None
         return draws, next_cursor
 
     async def get_lotto_statistics(
-        self, sort_type: SortType = SortType.FREQUENCY, include_bonus: bool = True
-    ) -> List[LottoStatistics]:
+        self,
+        sort_type: SortType = SortType.FREQUENCY,
+        include_bonus: bool = True,
+    ) -> list[LottoStatistics]:
         # 정렬 기준 설정
         if include_bonus:
             # 보너스 번호 포함
@@ -74,11 +81,13 @@ class LottoRepository:
 
         query = select(LottoStatistics).order_by(order_column)
         result = await self.session.execute(query)
-        return result.scalars().all()
+        return list(result.scalars().all())
 
-    async def get_latest_round(self) -> Optional[int]:
+    async def get_latest_round(self) -> int | None:
         """가장 최신 로또 회차를 조회합니다."""
-        query = select(LottoDraws.round).order_by(desc(LottoDraws.round)).limit(1)
+        query = (
+            select(LottoDraws.round).order_by(desc(LottoDraws.round)).limit(1)
+        )
         result = await self.session.execute(query)
         latest = result.scalar_one_or_none()
         return latest
@@ -91,7 +100,7 @@ class LottoRepository:
         await self.session.refresh(lotto_draw)
         return lotto_draw
 
-    async def get_lotto_draw_by_round(self, round: int) -> Optional[LottoDraws]:
+    async def get_lotto_draw_by_round(self, round: int) -> LottoDraws | None:
         """특정 회차의 로또 추첨 데이터를 조회합니다."""
         query = select(LottoDraws).where(LottoDraws.round == round)
         result = await self.session.execute(query)
@@ -158,8 +167,11 @@ class LottoRepository:
         return recommendation
 
     async def get_lotto_recommendation_by_user_id(
-        self, user_id: str, start_time: datetime = None, end_time: datetime = None
-    ) -> Optional[LottoRecommendations]:
+        self,
+        user_id: str,
+        start_time: datetime = None,
+        end_time: datetime = None,
+    ) -> LottoRecommendations | None:
         """사용자의 최신 로또 추천을 조회합니다."""
         query = select(LottoRecommendations).where(
             LottoRecommendations.user_id == user_id
@@ -175,7 +187,7 @@ class LottoRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_frequent_numbers(self, limit: int = 10) -> List[int]:
+    async def get_frequent_numbers(self, limit: int = 10) -> list[int]:
         """빈도 순으로 가장 많이 나온 번호들을 조회합니다."""
         query = (
             select(LottoStatistics.num)
@@ -185,7 +197,7 @@ class LottoRepository:
         result = await self.session.execute(query)
         return [row[0] for row in result.fetchall()]
 
-    async def get_excluded_numbers(self, limit: int = 2) -> List[int]:
+    async def get_excluded_numbers(self, limit: int = 2) -> list[int]:
         """last_round 기준 오름차순으로 정렬했을 때 가장 마지막 2개 번호를 조회합니다 (최근에 가장 안나온 번호)."""
         query = (
             select(LottoStatistics.num)
@@ -196,8 +208,8 @@ class LottoRepository:
         return [row[0] for row in result.fetchall()]
 
     async def get_recommendation_by_user_and_round(
-            self, user_id: str, round: int
-    ) -> Optional[LottoRecommendations]:
+        self, user_id: str, round: int
+    ) -> LottoRecommendations | None:
         query = (
             select(LottoRecommendations)
             .where(
@@ -211,7 +223,7 @@ class LottoRepository:
         return result.scalar_one_or_none()
 
     async def mark_all_recommendations_read_by_user_and_round(
-            self, user_id: str, round: int, read_at: datetime
+        self, user_id: str, round: int, read_at: datetime
     ) -> None:
         """특정 사용자와 회차의 모든 추천을 읽음 처리합니다."""
         stmt = (
