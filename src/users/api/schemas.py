@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 from src.config.schemas import CommonBase
 from src.four_pillars.entities.schemas import FourPillarDetail
 from src.users.common.utils import TimeUtils
-from src.users.entities.enums import Gender
+from src.users.domain.entities.enums import Gender
 
 
 class UserBase(CommonBase):

@@ -2,7 +2,7 @@
 from datetime import date
 from typing import List, Optional, Dict
 from src.config.schemas import CommonBase
-from src.fortune.entities.enums import FortuneType, FortuneDetailType
+from src.fortune.domain.entities.enums import FortuneType, FortuneDetailType
 
 
 class DailyFortuneResource(CommonBase):

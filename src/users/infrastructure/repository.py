@@ -1,18 +1,16 @@
 from datetime import datetime, time
 from typing import List, Optional
 
-from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.common.dependencies import get_db_session
 from src.four_pillars.entities.schemas import FourPillarDetail
-from src.users.entities.models import User
-from src.users.entities.schemas import UserCreate, UserUpdate
+from src.users.domain.entities.models import User
+from src.users.api.schemas import UserCreate, UserUpdate
 
 
 class UserRepository:
-    def __init__(self, session: AsyncSession = Depends(get_db_session)):
+    def __init__(self, session: AsyncSession):
         self.session = session
 
     async def get_users(self, skip: int = 0, limit: int = 100) -> List[User]:

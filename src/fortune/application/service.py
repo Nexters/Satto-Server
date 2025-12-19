@@ -1,32 +1,32 @@
 from datetime import date
-from typing import Optional, List
+from typing import Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 
-from src.fortune.entities.enums import FortuneType, FortuneDetailType
-from src.fortune.entities.schemas import (
+from src.common.logger import logger
+from src.fortune.api.schemas import (
     DailyFortuneResource,
     DailyFortuneResourceCreate,
-    DailyFortuneResourceUpdate,
     DailyFortuneResourceList,
-    UserDailyFortuneDetail,
+    DailyFortuneResourceUpdate,
     FortuneDetailItem,
+    UserDailyFortuneDetail,
+    UserDailyFortuneSummaries,
 )
-from src.fortune.entities.schemas import UserDailyFortuneSummaries
-from src.fortune.repository import FortuneRepository
-from src.fortune.entities.constants import DAILY_FORTUNE_FALLBACK_DATA
+from src.fortune.domain.entities.constants import DAILY_FORTUNE_FALLBACK_DATA
+from src.fortune.domain.entities.enums import FortuneDetailType, FortuneType
+from src.fortune.domain.interfaces import IFortuneRepository
 from src.hcx_client.client import HCXClient
 from src.hcx_client.common.parser import Parser
 from src.hcx_client.common.utils import HCXUtils
-from src.users.repository import UserRepository
-from src.common.logger import logger
+from src.users.domain.interfaces import IUserRepository
 
 
 class FortuneService:
     def __init__(
         self,
-        fortune_repository: FortuneRepository = Depends(),
-        user_repository: UserRepository = Depends(),
+        fortune_repository: IFortuneRepository,
+        user_repository: IUserRepository,
     ):
         self.repository = fortune_repository
         self.user_repository = user_repository
@@ -138,8 +138,6 @@ class FortuneService:
         # 2. 기존 정보가 없으면 HCX API 호출하여 생성
         return await self._create_daily_fortune_detail(user_id, fortune_date)
 
-
-
     async def _create_daily_fortune_detail(
         self, user_id: str, fortune_date: date
     ) -> UserDailyFortuneDetail:
@@ -147,7 +145,9 @@ class FortuneService:
         # 1. 사용자 정보 조회 (사주 정보 포함)
         user = await self.user_repository.get_user_by_id(user_id)
         if not user:
-            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+            raise HTTPException(
+                status_code=404, detail="사용자를 찾을 수 없습니다."
+            )
 
         if not user.four_pillar:
             raise HTTPException(
@@ -184,7 +184,9 @@ class FortuneService:
 
             # 3. 응답 파싱
             fortune_data = Parser.parse_json(response_content)
-            logger.info(f"HCX API 호출 성공: 사용자 {user_id}의 운세 데이터 생성 완료")
+            logger.info(
+                f"HCX API 호출 성공: 사용자 {user_id}의 운세 데이터 생성 완료"
+            )
 
         except Exception as e:
             logger.warning(
@@ -198,22 +200,24 @@ class FortuneService:
             FortuneDetailItem(
                 type=FortuneDetailType.MONEY,
                 title="재물운",
-                content=fortune_data.get("money_fortune", "")
+                content=fortune_data.get("money_fortune", ""),
             ),
             FortuneDetailItem(
                 type=FortuneDetailType.JOB,
-                title="취업운", 
-                content=fortune_data.get("job_fortune", "")
+                title="취업운",
+                content=fortune_data.get("job_fortune", ""),
             ),
             FortuneDetailItem(
                 type=FortuneDetailType.LOVE,
                 title="연애운",
-                content=fortune_data.get("love_fortune", "")
-            )
+                content=fortune_data.get("love_fortune", ""),
+            ),
         ]
 
         # 5. DB에 저장 (FortuneDetailItem을 dict로 변환)
-        fortune_details_dict = [detail.model_dump() for detail in fortune_details]
+        fortune_details_dict = [
+            detail.model_dump() for detail in fortune_details
+        ]
         model = await self.repository.create_user_daily_fortune_detail(
             user_id=user_id,
             fortune_date=fortune_date,

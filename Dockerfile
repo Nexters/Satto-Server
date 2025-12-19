@@ -8,6 +8,6 @@ WORKDIR /satto
 
 COPY pyproject.toml uv.lock ./
 
-RUN uv sync --no-dev
+RUN uv sync --no-install-project --no-dev
 
 COPY ./src /satto/src

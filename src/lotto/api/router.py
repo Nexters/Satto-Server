@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, Query
 
 from src.common.dependencies import get_lotto_service
-from src.lotto.entities.enums import SortType
-from src.lotto.entities.schemas import LottoDrawList, LottoStatistic
-from src.lotto.service import LottoService
+from src.lotto.domain.entities.enums import SortType
+from src.lotto.api.schemas import LottoDrawList, LottoStatistic
+from src.lotto.application.service import LottoService
 
 lotto_router = APIRouter(prefix="/lotto", tags=["lotto"])
 

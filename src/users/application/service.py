@@ -1,16 +1,16 @@
 from datetime import datetime, time
 
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 
 from src.four_pillars.common.calculator import FourPillarsCalculator
 from src.four_pillars.entities.schemas import FourPillarDetail
 from src.users.common.utils import TimeUtils
-from src.users.entities.schemas import UserCreate, UserDetail, UserList, UserUpdate
-from src.users.repository import UserRepository
+from src.users.api.schemas import UserCreate, UserDetail, UserList, UserUpdate
+from src.users.domain.interfaces import IUserRepository
 
 
 class UserService:
-    def __init__(self, user_repository: UserRepository = Depends()):
+    def __init__(self, user_repository: IUserRepository):
         self.repository = user_repository
         self.four_pillar_calculator = FourPillarsCalculator()
 
