@@ -2,7 +2,7 @@ from datetime import date
 from typing import List, Optional, Tuple
 
 from src.config.schemas import CommonBase
-from src.four_pillars.entities.schemas import FourPillarDetail
+from src.four_pillars import FourPillarDetail
 from src.users.common.utils import TimeUtils
 from src.users.domain.entities.enums import Gender
 

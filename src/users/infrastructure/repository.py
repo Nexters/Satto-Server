@@ -4,7 +4,7 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.four_pillars.entities.schemas import FourPillarDetail
+from src.four_pillars import FourPillarDetail
 from src.users.domain.entities.models import User
 from src.users.api.schemas import UserCreate, UserUpdate
 

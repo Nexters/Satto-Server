@@ -1,10 +1,10 @@
-from typing import Optional, List
+from typing import Optional
 
 from pydantic import BaseModel, field_validator
 from typing_extensions import TypedDict
 
 from src.config.schemas import CommonBase
-from src.four_pillars.entities.enums import FiveElements, TenGods
+from src.four_pillars.domain.entities.enums import FiveElements, TenGods
 
 
 class PillarInfo(BaseModel):
