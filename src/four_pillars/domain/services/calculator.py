@@ -1,12 +1,10 @@
 from datetime import date, datetime
 from typing import List, Optional
 
+from src.four_pillars.api.schemas import FourPillarDetail
 from src.four_pillars.domain.constants import BASE_YEAR, JIKKAN, JYUNISHI
 from src.four_pillars.domain.entities.enums import FiveElements
-from src.four_pillars.domain.entities.schemas import (
-    FourPillar,
-    FourPillarDetail,
-)
+from src.four_pillars.domain.entities.models import FourPillar
 from src.four_pillars.domain.services.analyzer import (
     FiveElementsAnalyzer,
     TenGodsAnalyzer,

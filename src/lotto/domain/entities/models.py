@@ -1,14 +1,14 @@
 from sqlalchemy import (
-    Column,
-    Integer,
-    Boolean,
-    Date,
-    CheckConstraint,
-    BigInteger,
-    String,
-    DateTime,
     JSON,
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    Column,
+    Date,
+    DateTime,
     ForeignKey,
+    Integer,
+    String,
 )
 from sqlalchemy.orm import relationship
 
@@ -25,7 +25,9 @@ class LottoStatistics(Base):
     last_round = Column(Integer)  # 마지막 출현 회차
     last_date = Column(Date)  # 마지막 출현 날짜
 
-    __table_args__ = (CheckConstraint("num BETWEEN 1 AND 45", name="num_range_check"),)
+    __table_args__ = (
+        CheckConstraint("num BETWEEN 1 AND 45", name="num_range_check"),
+    )
 
 
 class LottoDraws(Base):
@@ -60,4 +62,3 @@ class LottoRecommendations(Base):
     read_at = Column(DateTime, nullable=True)
 
     user = relationship("User", back_populates="lotto_recommendations")
-

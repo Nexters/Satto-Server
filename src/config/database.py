@@ -2,7 +2,11 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import DeclarativeBase
 
 from src.common.logger import logger
@@ -11,7 +15,9 @@ from src.config.config import DBConfig
 
 class Base(DeclarativeBase):
     created_at = Column(DateTime, default=datetime.now, nullable=False)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
+    updated_at = Column(
+        DateTime, default=datetime.now, onupdate=datetime.now, nullable=False
+    )
 
 
 class Mysql:
@@ -21,7 +27,7 @@ class Mysql:
             f":{config.MYSQL_PORT}/{config.MYSQL_DB}",
             echo=False,
             pool_pre_ping=True,
-            pool_recycle=28000
+            pool_recycle=28000,
         )
 
         self.async_session_local = async_sessionmaker(

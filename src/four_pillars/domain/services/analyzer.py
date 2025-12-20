@@ -2,7 +2,7 @@ from collections import Counter
 from typing import List, Tuple
 
 from src.four_pillars.domain.entities.enums import FiveElements, TenGods
-from src.four_pillars.domain.entities.schemas import PillarInfo
+from src.four_pillars.domain.entities.models import PillarInfo
 
 
 class FiveElementsAnalyzer:
@@ -38,7 +38,9 @@ class FiveElementsAnalyzer:
         "子": FiveElements.WATER,  # 자 - 수
     }
 
-    def analyze(self, pillars: List[str]) -> Tuple[List[FiveElements], List[FiveElements]]:
+    def analyze(
+        self, pillars: List[str]
+    ) -> Tuple[List[FiveElements], List[FiveElements]]:
         """사주팔자의 오행 분석"""
         element_counts = Counter()
 
@@ -245,7 +247,9 @@ class TenGodsAnalyzer:
         """지지의 숨겨진 천간을 구함"""
         return self.HIDDEN_STEMS.get(earthly_branch, "甲")
 
-    def get_pillar_detail(self, pillar: str, day_stem: str) -> PillarInfo | None:
+    def get_pillar_detail(
+        self, pillar: str, day_stem: str
+    ) -> PillarInfo | None:
         """각 기둥의 상세 정보를 생성"""
         if not pillar or len(pillar) != 2:
             return None
@@ -266,4 +270,3 @@ class TenGodsAnalyzer:
             stem_ten_god=heavenly_stem_ten_god,
             branch_ten_god=earthly_branch_ten_god,
         )
-
