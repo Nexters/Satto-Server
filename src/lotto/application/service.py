@@ -10,8 +10,8 @@ from src.common.logger import logger
 from src.hcx_client.client import HCXClient
 from src.hcx_client.common.parser import Parser
 from src.hcx_client.common.utils import HCXUtils
-from src.lotto.entities.enums import SortType
-from src.lotto.entities.schemas import (
+from src.lotto.domain.entities.enums import SortType
+from src.lotto.api.schemas import (
     LottoDraw,
     LottoDrawList,
     LottoRecommendation,
@@ -19,8 +19,8 @@ from src.lotto.entities.schemas import (
     LottoResultCheckResponse,
     LottoStatistic,
 )
-from src.lotto.interfaces import ILottoRepository
-from src.users.interfaces import IUserRepository
+from src.lotto.domain.interfaces import ILottoRepository
+from src.users.domain.interfaces import IUserRepository
 
 
 class LottoService:

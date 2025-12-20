@@ -2,16 +2,21 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, HTTPException
 
+from src.common.dependencies import (
+    get_fortune_service,
+    get_lotto_service,
+    get_user_service,
+)
 from src.four_pillars.entities.schemas import FourPillarDetail
-from src.lotto.entities.schemas import LottoRecommendation, LottoResultCheckResponse
-from src.lotto.service import LottoService
-from src.users.entities.schemas import UserCreate, UserDetail, UserList, UserUpdate
-from src.fortune.entities.schemas import (
+from src.lotto.api.schemas import LottoRecommendation, LottoResultCheckResponse
+from src.lotto.application.service import LottoService
+from src.users.api.schemas import UserCreate, UserDetail, UserList, UserUpdate
+from src.fortune.api.schemas import (
     UserDailyFortuneSummaries,
     UserDailyFortuneDetail,
 )
-from src.users.service import UserService
-from src.fortune.service import FortuneService
+from src.users.application.service import UserService
+from src.fortune.application.service import FortuneService
 from typing import List
 from datetime import date
 from src.common.utils import get_kst_date
@@ -24,20 +29,24 @@ user_router = APIRouter(prefix="/users", tags=["user"])
 async def get_users(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(100, ge=1, le=1000, description="Number of records to return"),
-    user_service: UserService = Depends(),
+    user_service: UserService = Depends(get_user_service),
 ):
     """사용자 목록을 조회합니다."""
     return await user_service.get_users(skip=skip, limit=limit)
 
 
 @user_router.get("/{user_id}", response_model=UserDetail)
-async def get_user(user_id: str, user_service: UserService = Depends()):
+async def get_user(
+    user_id: str, user_service: UserService = Depends(get_user_service)
+):
     """사용자 단건을 조회합니다."""
     return await user_service.get_user_by_id(user_id)
 
 
 @user_router.post("", response_model=UserDetail, status_code=201)
-async def create_user(user_create: UserCreate, user_service: UserService = Depends()):
+async def create_user(
+    user_create: UserCreate, user_service: UserService = Depends(get_user_service)
+):
     """새로운 사용자를 생성합니다.
     - id: device 고유 식별자
     - name: 사용자 이름
@@ -49,7 +58,9 @@ async def create_user(user_create: UserCreate, user_service: UserService = Depen
 
 
 @user_router.get("/{user_id}/four-pillar", response_model=FourPillarDetail)
-async def get_user_four_pillar(user_id: str, user_service: UserService = Depends()):
+async def get_user_four_pillar(
+    user_id: str, user_service: UserService = Depends(get_user_service)
+):
     """
     사용자의 사주 정보를 조회합니다.
 
@@ -73,7 +84,9 @@ async def get_user_four_pillar(user_id: str, user_service: UserService = Depends
 
 @user_router.put("/{user_id}", response_model=UserDetail)
 async def update_user(
-    user_id: str, user_update: UserUpdate, user_service: UserService = Depends()
+    user_id: str,
+    user_update: UserUpdate,
+    user_service: UserService = Depends(get_user_service),
 ):
     """사용자 정보를 수정합니다."""
     return await user_service.update_user(user_id, user_update)
@@ -82,7 +95,7 @@ async def update_user(
 @user_router.post("/{user_id}/lotto-recommendation", response_model=LottoRecommendation)
 async def create_lotto_recommendation(
     user_id: str,
-    lotto_service: LottoService = Depends(),
+    lotto_service: LottoService = Depends(get_lotto_service),
 ):
     """사용자별 로또 추천을 생성합니다."""
     try:
@@ -100,7 +113,7 @@ async def create_lotto_recommendation(
 )
 async def get_lotto_recommendation(
     user_id: str,
-    lotto_service: LottoService = Depends(),
+    lotto_service: LottoService = Depends(get_lotto_service),
 ):
     """
     사용자의 최신 로또 추천을 조회합니다.
@@ -122,7 +135,7 @@ async def get_lotto_recommendation(
 async def get_user_daily_fortunes(
     user_id: str,
     fortune_date: date = Query(default_factory=get_kst_date),
-    service: FortuneService = Depends(),
+    service: FortuneService = Depends(get_fortune_service),
 ):
     return await service.get_user_daily_fortune_summaries(user_id, fortune_date)
 
@@ -133,7 +146,7 @@ async def get_user_daily_fortunes(
 async def get_user_daily_fortune_details(
     user_id: str,
     fortune_date: date = Query(default_factory=get_kst_date),
-    fortune_service: FortuneService = Depends(),
+    fortune_service: FortuneService = Depends(get_fortune_service),
 ):
     """
     사용자의 특정 날짜 운세 상세 정보를 조회합니다.
@@ -151,7 +164,7 @@ async def get_user_daily_fortune_details(
 async def check_lotto_result(
     user_id: str,
     round: int,
-    lotto_service: LottoService = Depends(),
+    lotto_service: LottoService = Depends(get_lotto_service),
 ):
     """
     특정 회차의 당첨 결과를 확인합니다.

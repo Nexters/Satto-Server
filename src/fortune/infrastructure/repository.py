@@ -1,22 +1,20 @@
 from datetime import date
 from typing import List, Optional, Tuple, Iterable
 
-from fastapi import Depends
 from sqlalchemy import select, desc, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.common.dependencies import get_db_session
-from src.fortune.entities.enums import FortuneType
-from src.fortune.entities.models import (
+from src.fortune.domain.entities.enums import FortuneType
+from src.fortune.domain.entities.models import (
     UserDailyFortuneSummary as UserDailyFortuneSummaryModel,
     DailyFortuneResource as DailyFortuneResourceModel,
     UserDailyFortuneDetail as UserDailyFortuneDetailModel,
 )
-from src.fortune.entities.schemas import UserDailyFortuneSummary
+from src.fortune.api.schemas import UserDailyFortuneSummary
 
 
 class FortuneRepository:
-    def __init__(self, session: AsyncSession = Depends(get_db_session)):
+    def __init__(self, session: AsyncSession):
         self.session = session
 
     async def create_fortune(

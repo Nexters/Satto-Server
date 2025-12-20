@@ -1,15 +1,16 @@
-# src/fortune/router.py
+# src/fortune/api/router.py
 from datetime import date
 from typing import Optional
 from fastapi import APIRouter, Depends, Query, Path, HTTPException, status
-from src.fortune.entities.schemas import (
+from src.common.dependencies import get_fortune_service
+from src.fortune.api.schemas import (
     DailyFortuneResource,
     DailyFortuneResourceCreate,
     DailyFortuneResourceUpdate,
     DailyFortuneResourceList,
 )
-from src.fortune.service import FortuneService
-from src.fortune.entities.enums import FortuneType
+from src.fortune.application.service import FortuneService
+from src.fortune.domain.entities.enums import FortuneType
 
 fortune_router = APIRouter(prefix="/admin/fortune", tags=["fortune-admin"])
 
@@ -23,7 +24,7 @@ async def list_fortune_resources(
     limit: int = Query(10, ge=1, le=100, description="한 페이지 크기"),
     publish_date: Optional[date] = Query(None, description="발행일 필터"),
     fortune_type: Optional[FortuneType] = Query(None, description="유형 필터"),
-    service: FortuneService = Depends(),
+    service: FortuneService = Depends(get_fortune_service),
 ):
     return await service.list_fortunes(cursor, limit, publish_date, fortune_type)
 
@@ -36,7 +37,7 @@ async def list_fortune_resources(
 )
 async def create_fortune_resource(
     body: DailyFortuneResourceCreate,
-    service: FortuneService = Depends(),
+    service: FortuneService = Depends(get_fortune_service),
 ):
     return await service.create_fortune(body)
 
@@ -49,7 +50,7 @@ async def create_fortune_resource(
 async def update_fortune_resource(
     body: DailyFortuneResourceUpdate,
     resource_id: int = Path(..., description="운세 리소스 ID"),
-    service: FortuneService = Depends(),
+    service: FortuneService = Depends(get_fortune_service),
 ):
     return await service.update_fortune(resource_id, body)
 
@@ -61,7 +62,7 @@ async def update_fortune_resource(
 )
 async def delete_fortune_resource(
     resource_id: int = Path(..., description="운세 리소스 ID"),
-    service: FortuneService = Depends(),
+    service: FortuneService = Depends(get_fortune_service),
 ):
     await service.delete_fortune(resource_id)
     # 204 No Content

@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, Boolean, DateTime, Enum, JSON
 from sqlalchemy.orm import relationship
 
 from src.config.database import Base
-from src.users.entities.enums import Gender
+from src.users.domain.entities.enums import Gender
 
 
 class User(Base):

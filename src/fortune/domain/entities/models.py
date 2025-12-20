@@ -2,7 +2,7 @@
 from sqlalchemy import Column, Integer, Date, Enum as SAEnum, String, CheckConstraint, ForeignKey, JSON, UniqueConstraint
 from sqlalchemy.orm import relationship
 from src.config.database import Base
-from src.fortune.entities.enums import FortuneType
+from src.fortune.domain.entities.enums import FortuneType
 
 
 class DailyFortuneResource(Base):

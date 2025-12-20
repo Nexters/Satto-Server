@@ -3,8 +3,8 @@ from datetime import datetime
 from sqlalchemy import asc, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.lotto.entities.enums import SortType
-from src.lotto.entities.models import (
+from src.lotto.domain.entities.enums import SortType
+from src.lotto.domain.entities.models import (
     LottoDraws,
     LottoRecommendations,
     LottoStatistics,
