@@ -9,23 +9,17 @@ class FourPillarsDataLoader:
 
     def __init__(self):
         self.kanshi_array: list[str] = []
-        self.kanshi_hash: dict[str, int] = {}
         self.setsuiri_data: dict[int, Tuple[int, int]] = {}
         self._init_kanshi_data()
         self._init_setsuiri_data()
 
     def _init_kanshi_data(self):
-        """60간지 배열과 해시 초기화"""
+        """60간지 배열 초기화"""
         self.kanshi_array = []
         for i in range(60):
             j1 = JIKKAN[i % 10]
             j2 = JYUNISHI[i % 12]
             self.kanshi_array.append(j1 + j2)
-
-        self.kanshi_hash = {}
-        for i, v in enumerate(self.kanshi_array):
-            self.kanshi_hash[v] = i + 1
-
     def _init_setsuiri_data(self):
         """절입 데이터 초기화"""
         self.setsuiri_data = {}
