@@ -17,7 +17,7 @@ from src.four_pillars.domain.services.data_loader import FourPillarsDataLoader
 class FourPillarsCalculator:
     """사주 계산 클래스"""
 
-    def __init__(self, description_generator=None):
+    def __init__(self, description_generator: Optional[object] = None) -> None:
         """
         Args:
             description_generator: 설명 생성기 (선택적). 제공되면 calculate_four_pillars_detailed에서 설명 생성
