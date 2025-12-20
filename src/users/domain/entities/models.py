@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime, Enum, JSON
+from sqlalchemy import JSON, Boolean, Column, DateTime, Enum, String
 from sqlalchemy.orm import relationship
 
 from src.config.database import Base
@@ -15,4 +15,6 @@ class User(Base):
     four_pillar = Column(JSON, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
 
-    lotto_recommendations = relationship("LottoRecommendations", back_populates="user")
+    lotto_recommendations = relationship(
+        "LottoRecommendations", back_populates="user"
+    )
