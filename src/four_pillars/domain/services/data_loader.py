@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Tuple
 
 from src.four_pillars.domain.constants import JIKKAN, JYUNISHI
 
