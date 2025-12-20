@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator
 
 from src.config.schemas import CommonBase
-from src.four_pillars.entities.enums import FiveElements
+from src.four_pillars import FiveElements
 
 
 class LottoDraw(CommonBase):

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional, Protocol
 
-from src.four_pillars.entities.schemas import FourPillarDetail
+from src.four_pillars import FourPillarDetail
 from src.users.api.schemas import UserCreate, UserUpdate
 from src.users.domain.entities.models import User
 

@@ -2,8 +2,11 @@ from datetime import datetime, time
 
 from fastapi import HTTPException
 
-from src.four_pillars.common.calculator import FourPillarsCalculator
-from src.four_pillars.entities.schemas import FourPillarDetail
+from src.four_pillars import (
+    FourPillarDetail,
+    FourPillarDescriptionGenerator,
+    FourPillarsCalculator,
+)
 from src.users.common.utils import TimeUtils
 from src.users.api.schemas import UserCreate, UserDetail, UserList, UserUpdate
 from src.users.domain.interfaces import IUserRepository
@@ -12,7 +15,10 @@ from src.users.domain.interfaces import IUserRepository
 class UserService:
     def __init__(self, user_repository: IUserRepository):
         self.repository = user_repository
-        self.four_pillar_calculator = FourPillarsCalculator()
+        # description_generator를 주입하여 설명 생성 기능 활성화
+        self.four_pillar_calculator = FourPillarsCalculator(
+            description_generator=FourPillarDescriptionGenerator()
+        )
 
     async def get_users(self, skip: int = 0, limit: int = 100) -> UserList:
         users = await self.repository.get_users(skip=skip, limit=limit)

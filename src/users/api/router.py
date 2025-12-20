@@ -7,7 +7,7 @@ from src.common.dependencies import (
     get_lotto_service,
     get_user_service,
 )
-from src.four_pillars.entities.schemas import FourPillarDetail
+from src.four_pillars import FourPillarDetail
 from src.lotto.api.schemas import LottoRecommendation, LottoResultCheckResponse
 from src.lotto.application.service import LottoService
 from src.users.api.schemas import UserCreate, UserDetail, UserList, UserUpdate
