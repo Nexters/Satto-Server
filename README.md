@@ -66,37 +66,33 @@ API → Application → Domain ← Infrastructure
 - **Infrastructure**: Domain 인터페이스를 구현
 - **API**: Application을 호출하여 HTTP 요청 처리
 
-## 주요 모듈
+## Main Modules
 
 ### `users`
-사용자 관리 모듈
 - 사용자 생성/조회/수정
 - 사주 정보 저장 및 조회
 
 ### `four_pillars`
-사주 계산 모듈
 - 생년월일 기반 사주 계산
 - 오행, 십신 분석
 - HCX API를 통한 사주 설명 생성
 
 ### `fortune`
-운세 모듈
 - 일일 운세 제공
 - 사주 기반 운세 분석
 
 ### `lotto`
-로또 추천 모듈
 - 사주 기반 로또 번호 추천
 - 로또 통계 및 당첨 확인
 
-## 시작하기
+## Local Server Settings
 
-### 요구사항
+### Requirements
 - Python 3.13+
 - MySQL
 - uv (패키지 관리자)
 
-### 설치
+### 환경 세팅
 
 ```bash
 # 의존성 설치
@@ -109,11 +105,7 @@ cp .env.example .env
 ### 실행
 
 ```bash
-# 개발 서버 실행
-uvicorn src.main:app --reload
-
-# 프로덕션 실행
-gunicorn src.main:app -w 4 -k uvicorn.workers.UvicornWorker
+docker-compose -f docker-compose.local.yml up --build
 ```
 
 ## 전체 프로젝트 구조
@@ -142,7 +134,7 @@ Satto-Server/
 - **Code Quality**: ruff, mypy
 
 
-## 개발
+## Development
 
 ### 코드 포맷팅
 ```bash
