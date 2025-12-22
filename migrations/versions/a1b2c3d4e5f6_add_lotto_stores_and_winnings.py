@@ -88,6 +88,5 @@ def downgrade() -> None:
     # lotto_stores 테이블 삭제
     op.drop_table('lotto_stores')
     
-    # Enum 타입 삭제
-    op.execute('DROP TYPE IF EXISTS prizetype')
+    # MySQL은 ENUM이 컬럼과 함께 삭제되므로 별도 처리 불필요
 

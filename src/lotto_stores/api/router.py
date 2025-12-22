@@ -38,7 +38,7 @@ async def get_stores_map(
 @lotto_store_router.get("/search", response_model=LottoStoreSearchResponse)
 async def search_stores(
     query: str = Query(
-        ..., min_length=1, description="검색어 (복권방명, 주소)"
+        ..., min_length=1, max_length=100, description="검색어 (복권방명, 주소)"
     ),
     limit: int = Query(20, ge=1, le=50, description="조회할 개수"),
     store_service: LottoStoreService = Depends(get_lotto_store_service),

@@ -65,7 +65,9 @@ class LottoStoreWinning(Base):
 
     # 관계
     store = relationship("LottoStore", back_populates="winning_records")
-    draw = relationship("LottoDraws")
+    draw = relationship(
+        "LottoDraws"
+    )  # 단방향 관계 (LottoStoreWinning -> LottoDraws)
 
     __table_args__ = (
         Index(

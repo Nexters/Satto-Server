@@ -31,6 +31,7 @@ class LottoStoreRepository:
         limit: int = 100,
     ) -> list[LottoStore]:
         """지도 영역 내 판매점 조회"""
+        # TODO: Spatial query 사용
         query = (
             select(LottoStore)
             .where(
@@ -117,6 +118,7 @@ class LottoStoreRepository:
             query = query.where(LottoStore.region1 == region1)
 
         if cursor:
+            # TODO: cursor 형식 변경 (base64 사용)
             # cursor는 "당첨횟수_id" 형식
             parts = cursor.split("_", 1)
             if len(parts) == 2:
