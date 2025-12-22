@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from datetime import datetime
+from urllib.parse import quote_plus
 
 from sqlalchemy import Column, DateTime
 from sqlalchemy.ext.asyncio import (
@@ -22,8 +23,9 @@ class Base(DeclarativeBase):
 
 class Mysql:
     def __init__(self, config: DBConfig) -> None:
+        password = quote_plus(config.MYSQL_PASSWORD)
         self.engine = create_async_engine(
-            f"mysql+aiomysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}"
+            f"mysql+aiomysql://{config.MYSQL_USER}:{password}@{config.MYSQL_HOST}"
             f":{config.MYSQL_PORT}/{config.MYSQL_DB}",
             echo=False,
             pool_pre_ping=True,

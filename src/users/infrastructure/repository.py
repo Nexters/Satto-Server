@@ -5,8 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.four_pillars import FourPillarDetail
-from src.users.domain.entities.models import User
 from src.users.api.schemas import UserCreate, UserUpdate
+from src.users.domain.entities.models import User
 
 
 class UserRepository:
@@ -14,19 +14,19 @@ class UserRepository:
         self.session = session
 
     async def get_users(self, skip: int = 0, limit: int = 100) -> List[User]:
-        query = select(User).where(User.is_active == True).offset(skip).limit(limit)
+        query = select(User).where(User.is_active).offset(skip).limit(limit)
         result = await self.session.execute(query)
         return result.scalars().all()
 
     async def get_user_by_id(self, user_id: str) -> Optional[User]:
-        query = select(User).where(User.id == user_id, User.is_active == True)
+        query = select(User).where(User.id == user_id, User.is_active)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
     async def get_user_four_pillar(self, user_id: str) -> Optional[dict]:
         """사용자의 사주 정보만 조회"""
         query = select(User.four_pillar).where(
-            User.id == user_id, User.is_active == True
+            User.id == user_id, User.is_active
         )
         result = await self.session.execute(query)
         return result.scalar_one_or_none()

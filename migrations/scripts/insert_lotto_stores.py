@@ -10,9 +10,9 @@ Usage:
 
 import argparse
 import asyncio
+import html
 import json
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -66,18 +66,24 @@ class LottoStoreImporter:
         print(f"로드된 판매점 수: {len(stores)}")
         return stores
 
+    def _unescape(self, value: str | None) -> str | None:
+        """HTML entity를 디코딩합니다."""
+        if value is None:
+            return None
+        return html.unescape(value)
+
     def parse_store_data(self, raw_store: dict[str, Any]) -> dict[str, Any]:
         """JSON 데이터를 LottoStore 모델에 맞게 파싱합니다."""
         return {
             "id": str(raw_store.get("RTLRID", "")),
-            "name": raw_store.get("FIRMNM", ""),
+            "name": self._unescape(raw_store.get("FIRMNM", "")),
             "latitude": raw_store.get("LATITUDE"),
             "longitude": raw_store.get("LONGITUDE"),
-            "road_address": raw_store.get("BPLCDORODTLADRES"),
-            "lot_address": raw_store.get("BPLCLOCPLCDTLADRES"),
-            "region1": raw_store.get("BPLCLOCPLC1"),
-            "region2": raw_store.get("BPLCLOCPLC2"),
-            "region3": raw_store.get("BPLCLOCPLC3"),
+            "road_address": self._unescape(raw_store.get("BPLCDORODTLADRES")),
+            "lot_address": self._unescape(raw_store.get("BPLCLOCPLCDTLADRES")),
+            "region1": self._unescape(raw_store.get("BPLCLOCPLC1")),
+            "region2": self._unescape(raw_store.get("BPLCLOCPLC2")),
+            "region3": self._unescape(raw_store.get("BPLCLOCPLC3")),
             "phone": raw_store.get("RTLRSTRTELNO"),
             "first_prize_count": 0,
             "first_prize_auto": 0,

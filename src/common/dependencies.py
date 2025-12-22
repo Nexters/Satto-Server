@@ -7,6 +7,9 @@ from src.fortune.infrastructure.repository import FortuneRepository
 from src.lotto.application.service import LottoService
 from src.lotto.domain.interfaces import ILottoRepository
 from src.lotto.infrastructure.repository import LottoRepository
+from src.lotto_stores.application.service import LottoStoreService
+from src.lotto_stores.domain.interfaces import ILottoStoreRepository
+from src.lotto_stores.infrastructure.repository import LottoStoreRepository
 from src.users.application.service import UserService
 from src.users.domain.interfaces import IUserRepository
 from src.users.infrastructure.repository import UserRepository
@@ -47,3 +50,13 @@ def get_user_service(
     """사용자 서비스 의존성 주입 함수"""
     user_repository: IUserRepository = UserRepository(session=session)
     return UserService(user_repository=user_repository)
+
+
+def get_lotto_store_service(
+    session: AsyncSession = Depends(get_db_session),
+) -> LottoStoreService:
+    """로또 판매점 서비스 의존성 주입 함수"""
+    store_repository: ILottoStoreRepository = LottoStoreRepository(
+        session=session
+    )
+    return LottoStoreService(store_repository=store_repository)
