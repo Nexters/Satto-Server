@@ -1,5 +1,5 @@
+from src.four_pillars.api.schemas import FourPillarDetail
 from src.four_pillars.domain.entities.enums import FiveElements
-from src.four_pillars.domain.entities.schemas import FourPillarDetail
 from src.hcx_client.client import HCXClient
 from src.hcx_client.common.utils import HCXUtils
 

@@ -1,9 +1,9 @@
 """사주 계산 모듈"""
 
+from src.four_pillars.api.schemas import FourPillarDetail
 from src.four_pillars.domain.entities.enums import FiveElements, TenGods
-from src.four_pillars.domain.entities.schemas import (
+from src.four_pillars.domain.entities.models import (
     FourPillar,
-    FourPillarDetail,
     PillarInfo,
 )
 from src.four_pillars.domain.services.calculator import FourPillarsCalculator

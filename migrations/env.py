@@ -28,16 +28,23 @@ from src.config.config import db_config
 from src.config.database import Base
 
 # 모든 도메인 모델을 import하여 메타데이터에 포함해야 함
-from src.users.entities.models import User
-from src.lotto.entities.models import LottoStatistics, LottoDraws
-from src.fortune.entities.models import DailyFortuneResource, UserDailyFortuneSummary, UserDailyFortuneDetail
+from src.users.domain.entities.models import User
+from src.lotto.domain.entities.models import LottoStatistics, LottoDraws, LottoRecommendations
+from src.fortune.domain.entities.models import DailyFortuneResource, UserDailyFortuneSummary, UserDailyFortuneDetail
+from src.lotto_stores.domain.entities.models import LottoStore, LottoStoreWinning
 
 # 모델 메타데이터 설정
 target_metadata = Base.metadata
 
 # 데이터베이스 URL 설정
 def get_database_url():
-    return f"mysql+pymysql://{db_config.MYSQL_USER}:{db_config.MYSQL_PASSWORD}@{db_config.MYSQL_HOST}:{db_config.MYSQL_PORT}/{db_config.MYSQL_DB}"
+    from urllib.parse import quote_plus
+    password = quote_plus(db_config.MYSQL_PASSWORD)
+    return f"mysql+pymysql://{db_config.MYSQL_USER}:{password}@{db_config.MYSQL_HOST}:{db_config.MYSQL_PORT}/{db_config.MYSQL_DB}"
+
+def get_database_url_escaped():
+    """configparser용 (% -> %% 이스케이프)"""
+    return get_database_url().replace("%", "%%")
 
 
 # other values from the config, defined by the needs of env.py,
@@ -77,7 +84,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    config.set_main_option("sqlalchemy.url", get_database_url())
+    config.set_main_option("sqlalchemy.url", get_database_url_escaped())
 
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),

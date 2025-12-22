@@ -1,27 +1,15 @@
 from typing import Optional
 
-from pydantic import BaseModel, field_validator
-from typing_extensions import TypedDict
+from pydantic import field_validator
 
 from src.config.schemas import CommonBase
-from src.four_pillars.domain.entities.enums import FiveElements, TenGods
-
-
-class PillarInfo(BaseModel):
-    stem: str  # 천간 (첫 번째 글자)
-    branch: str  # 지지 (두 번째 글자)
-    stem_ten_god: TenGods  # 천간의 십신
-    branch_ten_god: TenGods  # 지지의 십신
-
-
-class FourPillar(TypedDict, total=False):
-    year_pillar: str  # 년주
-    month_pillar: str  # 월주
-    day_pillar: str  # 일주
-    time_pillar: Optional[str]  # 시주
+from src.four_pillars.domain.entities.enums import FiveElements
+from src.four_pillars.domain.entities.models import PillarInfo
 
 
 class FourPillarDetail(CommonBase):
+    """사주 상세 정보 (API 응답 스키마)"""
+
     strong_element: FiveElements  # 가장 많은 오행
     weak_element: FiveElements  # 가장 적은 오행
     description: str  # 종합 설명

@@ -1,8 +1,9 @@
 # src/fortune/entities/schemas.py
 from datetime import date
-from typing import List, Optional, Dict
+from typing import List, Optional
+
 from src.config.schemas import CommonBase
-from src.fortune.domain.entities.enums import FortuneType, FortuneDetailType
+from src.fortune.domain.entities.enums import FortuneDetailType, FortuneType
 
 
 class DailyFortuneResource(CommonBase):
@@ -31,6 +32,7 @@ class DailyFortuneResourceUpdate(CommonBase):
     image_url: Optional[str] = None
     description: Optional[str] = None
 
+
 class UserDailyFortuneSummary(CommonBase):
     id: int
     user_id: str
@@ -39,6 +41,7 @@ class UserDailyFortuneSummary(CommonBase):
     image_url: str
     description: str
 
+
 class UserDailyFortuneSummaries(CommonBase):
     title: str
     content: List[UserDailyFortuneSummary]
@@ -46,6 +49,7 @@ class UserDailyFortuneSummaries(CommonBase):
 
 class FortuneDetailItem(CommonBase):
     """운세 상세 항목"""
+
     type: FortuneDetailType
     title: str
     content: str
