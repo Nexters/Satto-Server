@@ -65,6 +65,11 @@ class LottoStoreWinning(Base):
 
     # 관계
     store = relationship("LottoStore", back_populates="winning_records")
+    # Note:
+    # - This relationship to LottoDraws is intentionally defined as one-way.
+    # - LottoDraws does not declare a back_populates/reciprocal relationship for this link.
+    #   This avoids coupling draw aggregates to store-winning records while still allowing
+    #   navigation from LottoStoreWinning to the associated draw when needed.
     draw = relationship(
         "LottoDraws"
     )  # 단방향 관계 (LottoStoreWinning -> LottoDraws)
