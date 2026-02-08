@@ -8,6 +8,7 @@ from src.fortune.api.router import fortune_router
 from src.lotto.api.router import lotto_router
 from src.lotto_stores.api.router import lotto_store_router
 from src.users.api.router import user_router
+from src.atm.api.router import atm_router
 
 app = FastAPI(lifespan=lifespan, root_path="/api/v1")
 
@@ -24,3 +25,4 @@ app.include_router(user_router)
 app.include_router(lotto_router)
 app.include_router(lotto_store_router)
 app.include_router(fortune_router)
+app.include_router(atm_router)

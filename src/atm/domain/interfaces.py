@@ -4,7 +4,6 @@ from typing import Protocol
 
 from src.atm.domain.entities.models import (
     Atm,
-    AtmWinning,
 )
 
 

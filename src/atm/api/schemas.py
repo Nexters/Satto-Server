@@ -5,7 +5,6 @@ from typing import Optional
 from pydantic import Field
 
 from src.config.schemas import CommonBase
-from src.atm.domain.entities.enums import PrizeType
 
 
 # ========================================

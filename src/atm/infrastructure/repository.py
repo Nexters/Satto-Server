@@ -40,7 +40,7 @@ class AtmRepository:
                 Atm.longitude >= min_lng,
                 Atm.longitude <= max_lng,
             )
-            .order_by(desc(Atm.first_prize_count), Atm.id)
+            .order_by(Atm.id)
             .limit(limit)
         )
 
@@ -59,15 +59,15 @@ class AtmRepository:
             select(Atm)
             .where(
                 or_(
-                    Atm.name.ilike(search_pattern),
-                    Atm.road_address.ilike(search_pattern),
-                    Atm.lot_address.ilike(search_pattern),
-                    Atm.region1.ilike(search_pattern),
-                    Atm.region2.ilike(search_pattern),
-                    Atm.region3.ilike(search_pattern),
+                    Atm.place_name.ilike(search_pattern),
+                    Atm.road_address_name.ilike(search_pattern),
+                    Atm.address_name.ilike(search_pattern),
+                    # Atm.region1.ilike(search_pattern),
+                    # Atm.region2.ilike(search_pattern),
+                    # Atm.region3.ilike(search_pattern),
                 )
             )
-            .order_by(desc(Atm.first_prize_count), Atm.name)
+            .order_by(Atm.id)
             .limit(limit)
         )
 

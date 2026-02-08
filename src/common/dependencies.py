@@ -69,7 +69,7 @@ def get_lotto_store_service(
 def get_atm_service(
     session: AsyncSession = Depends(get_db_session),
 ) -> AtmService:
-    """로또 판매점 서비스 의존성 주입 함수"""
+    """ATM 서비스 의존성 주입 함수"""
     atm_repository: IAtmRepository = AtmRepository(
         session=session
     )

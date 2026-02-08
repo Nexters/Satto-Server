@@ -24,7 +24,7 @@ async def get_atm_map(
     atm_service: AtmService = Depends(get_atm_service),
 ):
     """지도 영역 내 ATM 마커 목록을 조회합니다."""
-    return await atm_service.get_atm_map(
+    return await atm_service.get_atms_map(
         min_lat=min_lat,
         max_lat=max_lat,
         min_lng=min_lng,
@@ -36,13 +36,13 @@ async def get_atm_map(
 @atm_router.get("/search", response_model=AtmSearchResponse)
 async def search_atm(
     query: str = Query(
-        ..., min_length=1, max_length=100, description="검색어 (ATM명, 주소)"
+        ..., min_length=1, max_length=100, description="검색어 (ATM명)"
     ),
     limit: int = Query(20, ge=1, le=50, description="조회할 개수"),
     atm_service: AtmService = Depends(get_atm_service),
 ):
     """ATM을 검색합니다."""
-    return await atm_service.search_atm(query=query, limit=limit)
+    return await atm_service.search_atms(query=query, limit=limit)
 
 
 @atm_router.get("/{atm_id}", response_model=AtmInfo)

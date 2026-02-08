@@ -1,34 +1,36 @@
 # src/atm/domain/entities/models.py
-from xmlrpc.client import Boolean
 
-from sqlalchemy import (
-    Column,
-    ForeignKey,
-    Index,
-    Integer,
-    Numeric,
-    String,
-)
-from sqlalchemy import Enum as SAEnum
-from sqlalchemy.orm import relationship
-
+from sqlalchemy import Column, Numeric, String, Index
 from src.config.database import Base
 
+
 class Atm(Base):
-    """ATM 테이블"""
+    """ATM 테이블 (Kakao Local 기반 ATM 데이터)"""
 
     __tablename__ = "atm"
 
-    id = Column(String(20), primary_key=True)  # RTLRID (ATM ID)
-    name = Column(String(100), nullable=False)  # ATM_NAME
+    # Kakao place id는 숫자 문자열이지만 길이가 길 수 있어 넉넉히
+    id = Column(String(32), primary_key=True)
 
-    trns_org_code = Column(String(3), nullable=False) # 전송기관코드
-    org_type_code = Column(String(3), nullable=False) # 한 기관 내 다수법인 코드가 구분된 경우 사용
-    atm_no = Column(String(20), nullable=False) # 단말번호
-    dup_atm_no = Column(String(20), nullable=True) # 중복 ATM 번호
+    place_name = Column(String(255), nullable=False)
+    category_name = Column(String(255), nullable=True)
 
-    # 위치 정보
-    latitude = Column(Numeric(10, 7))  # ATM_LATITUDE
-    longitude = Column(Numeric(10, 7))  # ATM_LONGITUDE
-    mob_cash_card_psb_yn = Column(String(1)) # 모바일현금카드사용여부
-    istl_loc_type_code = Column(String(3)) # 설치장소구분코드
+    category_group_code = Column(String(16), nullable=True)
+    category_group_name = Column(String(64), nullable=True)
+
+    phone = Column(String(64), nullable=True)
+
+    address_name = Column(String(255), nullable=True)
+    road_address_name = Column(String(255), nullable=True)
+
+    # 명세에서 latitude/longitude 순서로 들어오므로 그대로 유지
+    latitude = Column(Numeric(10, 7), nullable=True)   # y
+    longitude = Column(Numeric(10, 7), nullable=True)  # x
+
+    place_url = Column(String(255), nullable=True)
+
+    __table_args__ = (
+        # 좌표 기반 조회가 많으면 인덱스 추천
+        Index("idx_atm_lat_lon", "latitude", "longitude"),
+        Index("idx_atm_place_name", "place_name"),
+    )
