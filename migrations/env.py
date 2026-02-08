@@ -32,6 +32,7 @@ from src.users.domain.entities.models import User
 from src.lotto.domain.entities.models import LottoStatistics, LottoDraws, LottoRecommendations
 from src.fortune.domain.entities.models import DailyFortuneResource, UserDailyFortuneSummary, UserDailyFortuneDetail
 from src.lotto_stores.domain.entities.models import LottoStore, LottoStoreWinning
+from src.atm.domain.entities.models import Atm
 
 # 모델 메타데이터 설정
 target_metadata = Base.metadata

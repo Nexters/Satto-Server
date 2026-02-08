@@ -13,6 +13,9 @@ from src.lotto_stores.infrastructure.repository import LottoStoreRepository
 from src.users.application.service import UserService
 from src.users.domain.interfaces import IUserRepository
 from src.users.infrastructure.repository import UserRepository
+from src.atm.application.service import AtmService
+from src.atm.domain.interfaces import IAtmRepository
+from src.atm.infrastructure.repository import AtmRepository
 
 
 def get_db_session(request: Request) -> AsyncSession:
@@ -60,3 +63,14 @@ def get_lotto_store_service(
         session=session
     )
     return LottoStoreService(store_repository=store_repository)
+
+
+
+def get_atm_service(
+    session: AsyncSession = Depends(get_db_session),
+) -> AtmService:
+    """ATM 서비스 의존성 주입 함수"""
+    atm_repository: IAtmRepository = AtmRepository(
+        session=session
+    )
+    return AtmService(atm_repository=atm_repository)
