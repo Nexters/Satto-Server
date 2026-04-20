@@ -1,4 +1,3 @@
-
 services:
   mysql:
     image: mysql:8.0
@@ -17,7 +16,7 @@ services:
 #      retries: 10
 
   fastapi:
-    image: satto-registry.kr.ncr.ntruss.com/satto-server-fastapi:latest
+    image: ${FASTAPI_IMAGE:-ghcr.io/swa07016/satto-server-fastapi:latest}
     pull_policy: always
     container_name: fastapi-app
 #    depends_on:
